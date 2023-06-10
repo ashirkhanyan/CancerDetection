@@ -1,0 +1,23 @@
+What are you trying to do? Articulate your objectives using absolutely no jargon.
+We want to fasten the process of detecting the type of breast cancer using ultrasound images. Using neural networks we want to predict if the tumor in breast ultrasound is benign or malignant.
+	
+How is it done today, and what are the limits of current practice?
+Currently CNNs make up the base of deep neural networks which are used to identify breast cancers using ultrasound images. Even though with great systems having pretty good accuracy, better methods which can have faster outputs with higher accuracy is currently being sought after. 
+	
+What is new in your approach and why do you think it will be successful?
+We plan on utilizing scalable CNNs or EfficientNet to search for a model which can detect breast cancer with higher accuracy and speed
+	
+Who cares? If you are successful, what difference will it make?
+Both patients and doctors would be benefitted by this project if it is a success. Patients can get an early diagnosis at a lower cost even before they visit a doctor. It can help doctors in reducing the queue and also have a secondary view to take the final call on type of cancer and further treatment plans.
+	
+What are the risks?
+In this method there is a good chance of incorrectly tagging the benign or malignant tumors on a large scale. This could lead to incorrect treatment plans and/or needless worry.
+	
+How much will it cost?
+Our team has enough compute power available locally and plan to also use free resources available online like Google Colab. This should not invite more costs as per plan.
+	
+How long will it take?
+We plan to finish the project well before the stipulated time frame of 12 weeks and the breakdown provided as per the kick-off deck provided by the sponsor.
+	
+What are the mid-term and final “exams” to check for success?
+As per the project requirements we plan to provide a midterm report with progress, observations and findings. We would get enough sense by midterm report in case we need to keep steady or change directions. As for the final exam our model will be tested against a test dataset by the sponsor which would provide us with enough information about the success of project in terms of Accuracy, True Positive Rate and False Negative Rate. These measures will help us in understanding if we are detecting types of tumor correctly. In our case, predicting malignant tumors as benign would be more dangerous in comparison to the opposite, because it might lead to incorrect treatment plans which might worsen with time. We might come up with more KPIs to measure our success later in the project.
