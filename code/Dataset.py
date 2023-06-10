@@ -8,6 +8,10 @@ from torch.utils.data import Dataset
 class UltrasoundDataset(Dataset):
     def __init__(self, root_dir):
         self.root_dir = root_dir
+        self.type_map = {
+            "malignant": 0,
+            "benign": 1,
+        }
         self.image_paths, self.labels, self.json_data_shape, self.counter = self._load_data()
         self.transform = transforms.Compose([
             transforms.ToTensor()
@@ -40,12 +44,12 @@ class UltrasoundDataset(Dataset):
                         image_paths.append(file_path)
                     else:
                         counter += 1
-
-                    if 'benign' in file_path:
-                        label = 'benign'
-                    else:
-                        label = 'malignant'
-                    labels.append(label)
+                    cancer_type = file_path.split(os.path.sep)[-3]
+                    # if 'benign' in file_path:
+                    #     label = 'benign'
+                    # else:
+                    #     label = 'malignant'
+                    labels.append(self.type_map[cancer_type])
 
                     json_path = os.path.splitext(file_path)[0] + '.json'
                     with open(json_path) as json_file:
