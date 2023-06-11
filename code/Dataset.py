@@ -4,15 +4,12 @@ from PIL import Image
 import os
 import json
 from torch.utils.data import Dataset
-from config import IMAGE_WIDTH, IMAGE_HEIGHT
+from config import IMAGE_WIDTH, IMAGE_HEIGHT, CLASS_MAP, INV_CLASS_MAP
 
 class UltrasoundDataset(Dataset):
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, only_malignant = False):
         self.root_dir = root_dir
-        self.type_map = {
-            "malignant": 0,
-            "benign": 1,
-        }
+        self.only_malignant = only_malignant
         self.image_paths, self.labels, self.json_data_shape, self.counter = self._load_data()
         self.transform = transforms.Compose([
             transforms.Resize((IMAGE_HEIGHT, IMAGE_WIDTH)),
@@ -40,19 +37,12 @@ class UltrasoundDataset(Dataset):
             for filename in filenames:
                 if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
                     file_path = os.path.join(dirpath, filename)
-                    image_open = Image.open(file_path)
-                    width, height = image_open.size
-                    # if width == IMAGE_WIDTH and height == IMAGE_HEIGHT:
-                    image_paths.append(file_path)
-                    # else:
-                    #     counter += 1
                     cancer_type = file_path.split(os.path.sep)[-3]
-                    # if 'benign' in file_path:
-                    #     label = 'benign'
-                    # else:
-                    #     label = 'malignant'
-                    labels.append(self.type_map[cancer_type])
-
+                    cancer_type_id = CLASS_MAP[cancer_type]
+                    if cancer_type == "benign" and self.only_malignant:
+                        continue
+                    image_paths.append(file_path)
+                    labels.append(cancer_type_id)
                     json_path = os.path.splitext(file_path)[0] + '.json'
                     with open(json_path) as json_file:
                         data = json.load(json_file)

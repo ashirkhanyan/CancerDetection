@@ -13,38 +13,23 @@ import sys
 
 class Trainer():
 
-    def __init__(self, criterion, model: Module, optimizer: Optimizer, train_dataloader: DataLoader, val_dataloader: DataLoader = None) -> None:
+    def __init__(self, criterion, model: Module, optimizer: Optimizer, train_dataloader: DataLoader, val_dataloader: DataLoader = None, device = torch.device("cpu"), logger: logging.Logger = None, save_path="./") -> None:
         self.criterion = criterion
         self.model = model 
         self.optimizer = optimizer
-        self.scheduler = ReduceLROnPlateau(optimizer, patience=PATIENCE, factor=REDUCE_FACTOR, verbose=True)
+        self.scheduler = ReduceLROnPlateau(optimizer, patience=PATIENCE, factor=REDUCE_FACTOR)
         self.lr = self.optimizer.param_groups[0]['lr']
         self.train_loader = train_dataloader
         self.val_loader = val_dataloader
-        if torch.has_mps:
-            self.device = torch.device("mps")
-        elif torch.has_cuda:
-            self.device = torch.device("cuda")
+        self.device = device
+        self.save_path = save_path
+        if logger:
+            self.logger = logger
         else:
-            self.device = torch.device("cpu")
-        folders = os.listdir(PLOT_FOLDER)
-        folders = [int(dir.split("_")[0]) for dir in folders if os.path.isdir(os.path.join(PLOT_FOLDER, dir))]
-        if not len(folders):
-            self.run_name = 0
-        else:
-            self.run_name = max(folders) + 1
-        self.save_path = os.path.join(PLOT_FOLDER, str(self.run_name)+f"_{MODEL}_{LOSS}_{OPTIMIZER}_{LEARNING_RATE}_{REDUCE_FACTOR}_{EPOCHS}")
-        print(f"Saving at {self.save_path}")
-        os.makedirs(self.save_path, exist_ok=True)
-        logging.basicConfig(format=f"%(message)s", level=logging.INFO, handlers=[
-            logging.FileHandler(os.path.join(self.save_path, f"{self.run_name}.log"), mode="w"),
-            logging.StreamHandler(sys.stdout)
-        ])
-        with open("config.py", "r") as config_file:
-            config = config_file.read()
-        logging.info(f"\nUsing device: {self.device}")
-        logging.info("\nTraining Config:")
-        logging.info(config)
+            self.logger = logging.basicConfig(format=f"%(message)s", level=logging.INFO, handlers=[
+                logging.FileHandler(os.path.join(self.save_path, "training.log"), mode="w"),
+                logging.StreamHandler(sys.stdout)
+            ])
 
 
     def start_train(self, epochs, plot=False):
@@ -55,7 +40,7 @@ class Trainer():
         val_losses = []
         start_time = datetime.now()
         max_acc = 0
-        logging.info(f"Training started at {start_time}")
+        self.logger.info(f"Training started at {start_time}")
         for epoch in range(epochs):
             train_acc, train_loss = self.train(epoch)
             val_acc, val_loss = self.validate(epoch)
@@ -64,15 +49,15 @@ class Trainer():
             val_accs.append(val_acc)
             val_losses.append(val_loss)
             if val_acc > max_acc:
-                torch.save(self.model, os.path.join(self.save_path, "best_model.pt"))
+                torch.save(self.model.state_dict(), os.path.join(self.save_path, "best_model.pt"))
                 max_acc = val_acc
             self.scheduler.step(val_loss)
             new_lr = self.optimizer.param_groups[0]['lr']
             if self.lr != new_lr:
-                logging.info(f"\nEpoch: {epoch+1:03d}/{self.epochs:03d}: Reduced LR from {self.lr} to {new_lr}")
+                self.logger.info(f"\nEpoch: {epoch+1:03d}/{self.epochs:03d}: Reduced LR from {self.lr:.07f} to {new_lr:.07f}")
                 self.lr = new_lr
-        torch.save(self.model, os.path.join(self.save_path, "last_model.pt"))
-        logging.info(f"\nTraining finished in at {datetime.now()}. Took {((datetime.now()-start_time).total_seconds())/60:.02f} minutes.")
+        torch.save(self.model.state_dict(), os.path.join(self.save_path, "last_model.pt"))
+        self.logger.info(f"\nTraining finished in at {datetime.now()}. Took {((datetime.now()-start_time).total_seconds())/60:.02f} minutes.")
         if plot:
             train_acc_plot_name = os.path.join(self.save_path, "train_accuracy.png")
             train_loss_plot_name = os.path.join(self.save_path, "train_loss.png")
@@ -83,13 +68,13 @@ class Trainer():
             self.plot_graph(plot_epochs, train_losses, "Epochs", "Train Loss", "Loss Curve (Training)", f"{train_loss_plot_name}")
             self.plot_graph(plot_epochs, val_accs, "Epochs", "Validation Accuracy", "Accuracy Curve (Validation)", f"{val_acc_plot_name}", color='orange')
             self.plot_graph(plot_epochs, val_losses, "Epochs", "Validation Loss", "Loss Curve (Validation)", f"{val_loss_plot_name}", color='orange')
-            with open(os.path.join(self.save_path, "plot_values.txt"), "w") as text_file:
+            with open(os.path.join(self.save_path, "plot_values.py"), "w") as text_file:
                 text_file.write(f"epochs={list(plot_epochs)}\n")
                 text_file.write(f"train_accs={train_accs}\n")
                 text_file.write(f"train_losses={train_losses}\n")
                 text_file.write(f"val_accs={val_accs}\n")
                 text_file.write(f"val_losses={val_losses}\n")
-            logging.info(f"Plots are available at {self.save_path}\n")
+            self.logger.info(f"Plots are available at {self.save_path}\n")
         
 
 
@@ -97,7 +82,7 @@ class Trainer():
         correct = 0
         samples = 0
         tot_loss = 0
-        logging.info("\n------------Training------------")
+        self.logger.info("\n------------Training------------")
         for idx, (image, label, json_shape) in enumerate(self.train_loader):
             self.model = self.model.to(self.device)
             image = image.to(self.device)
@@ -114,7 +99,7 @@ class Trainer():
             avg_acc = correct/samples
             tot_loss += loss
             avg_loss = tot_loss/(idx+1)
-            logging.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(self.train_loader):03d}: batch_train_loss = {loss:.05f}, avg_train_loss = {avg_loss:.05f}, batch_train_acc = {batch_acc:.05f}, avg_train_acc = {avg_acc:.05f}")
+            self.logger.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(self.train_loader):03d}: batch_train_loss = {loss:.05f}, avg_train_loss = {avg_loss:.05f}, batch_train_acc = {batch_acc:.05f}, avg_train_acc = {avg_acc:.05f}")
         return avg_acc.item(), avg_loss.item()
             
 
@@ -122,7 +107,7 @@ class Trainer():
         correct = 0
         samples = 0
         tot_loss = 0
-        logging.info("\n------------Validation------------")
+        self.logger.info("\n------------Validation------------")
         for idx, (image, label, json_shape) in enumerate(self.val_loader):
             with torch.no_grad():
                 self.model = self.model.to(self.device)
@@ -137,7 +122,7 @@ class Trainer():
             avg_acc = correct/samples
             tot_loss += loss
             avg_loss = tot_loss/(idx+1)
-            logging.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(self.val_loader):03d}: batch_val_loss = {loss:.05f}, avg_val_loss = {avg_loss:.05f}, batch_val_acc = {batch_acc:.05f}, avg_val_acc = {avg_acc:.05f}")
+            self.logger.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(self.val_loader):03d}: batch_val_loss = {loss:.05f}, avg_val_loss = {avg_loss:.05f}, batch_val_acc = {batch_acc:.05f}, avg_val_acc = {avg_acc:.05f}")
         return avg_acc.item(), avg_loss.item()
 
 
