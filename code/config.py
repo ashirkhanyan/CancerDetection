@@ -1,16 +1,16 @@
-import os
+import getpass
 
 SEED = 42
 LOSS = "ce"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
-MODEL = "resnet" # resnet, densenet, mobilenet
+MODEL = "mobilenet" # resnet, densenet, mobilenet
 BATCH_SIZE = 32
-VIS_BATCH_SIZE = 7
+VIS_BATCH_SIZE = 5
 EPOCHS = 30
 
-if os.environ.get('USERNAME') == 'srv':
+if getpass.getuser() == 'srv':
     fld = "/Users/srv/Documents/Cloud"
 else:
     fld = "/Users/aleks"

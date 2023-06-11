@@ -48,6 +48,7 @@ def visualize_attr_maps(path, X, y, class_names, attributions, titles,
 
     plt.gcf().set_size_inches(20, 13)
     plt.savefig(path, bbox_inches='tight')
+    plt.close()
 
 
 def compute_attributions(algo, inputs, **kwargs):
