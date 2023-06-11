@@ -4,6 +4,7 @@ from PIL import Image
 import os
 import json
 from torch.utils.data import Dataset
+from config import IMAGE_WIDTH, IMAGE_HEIGHT
 
 class UltrasoundDataset(Dataset):
     def __init__(self, root_dir):
@@ -14,6 +15,7 @@ class UltrasoundDataset(Dataset):
         }
         self.image_paths, self.labels, self.json_data_shape, self.counter = self._load_data()
         self.transform = transforms.Compose([
+            transforms.Resize((IMAGE_HEIGHT, IMAGE_WIDTH)),
             transforms.ToTensor()
         ])
 
@@ -40,10 +42,10 @@ class UltrasoundDataset(Dataset):
                     file_path = os.path.join(dirpath, filename)
                     image_open = Image.open(file_path)
                     width, height = image_open.size
-                    if width == 768 and height == 576:
-                        image_paths.append(file_path)
-                    else:
-                        counter += 1
+                    # if width == IMAGE_WIDTH and height == IMAGE_HEIGHT:
+                    image_paths.append(file_path)
+                    # else:
+                    #     counter += 1
                     cancer_type = file_path.split(os.path.sep)[-3]
                     # if 'benign' in file_path:
                     #     label = 'benign'
