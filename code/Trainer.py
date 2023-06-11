@@ -7,7 +7,7 @@ from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from datetime import datetime
 from matplotlib import pyplot as plt
-from config import PLOT_FOLDER, PATIENCE, REDUCE_FACTOR
+from config import *
 import logging
 import sys
 
@@ -28,12 +28,12 @@ class Trainer():
         else:
             self.device = torch.device("cpu")
         folders = os.listdir(PLOT_FOLDER)
-        folders = [int(dir) for dir in folders if os.path.isdir(os.path.join(PLOT_FOLDER, dir))]
+        folders = [int(dir.split("_")[0]) for dir in folders if os.path.isdir(os.path.join(PLOT_FOLDER, dir))]
         if not len(folders):
             self.run_name = 0
         else:
             self.run_name = max(folders) + 1
-        self.save_path = os.path.join(PLOT_FOLDER, str(self.run_name))
+        self.save_path = os.path.join(PLOT_FOLDER, str(self.run_name)+f"_{MODEL}_{LOSS}_{OPTIMIZER}_{LEARNING_RATE}_{REDUCE_FACTOR}_{EPOCHS}")
         print(f"Saving at {self.save_path}")
         os.makedirs(self.save_path, exist_ok=True)
         logging.basicConfig(format=f"%(message)s", level=logging.INFO, handlers=[
@@ -78,12 +78,18 @@ class Trainer():
             train_loss_plot_name = os.path.join(self.save_path, "train_loss.png")
             val_acc_plot_name = os.path.join(self.save_path, "val_accuracy.png")
             val_loss_plot_name = os.path.join(self.save_path, "val_loss.png")
-            plot_epochs = range(self.epochs)
+            plot_epochs = range(1, self.epochs+1)
             self.plot_graph(plot_epochs, train_accs, "Epochs", "Train Accuracy", "Accuracy Curve (Training)", f"{train_acc_plot_name}")
             self.plot_graph(plot_epochs, train_losses, "Epochs", "Train Loss", "Loss Curve (Training)", f"{train_loss_plot_name}")
             self.plot_graph(plot_epochs, val_accs, "Epochs", "Validation Accuracy", "Accuracy Curve (Validation)", f"{val_acc_plot_name}", color='orange')
             self.plot_graph(plot_epochs, val_losses, "Epochs", "Validation Loss", "Loss Curve (Validation)", f"{val_loss_plot_name}", color='orange')
-            logging.info(f"Plots are available at {self.save_path}")
+            with open(os.path.join(self.save_path, "plot_values.txt"), "w") as text_file:
+                text_file.write(f"epochs={list(plot_epochs)}\n")
+                text_file.write(f"train_accs={train_accs}\n")
+                text_file.write(f"train_losses={train_losses}\n")
+                text_file.write(f"val_accs={val_accs}\n")
+                text_file.write(f"val_losses={val_losses}\n")
+            logging.info(f"Plots are available at {self.save_path}\n")
         
 
 
