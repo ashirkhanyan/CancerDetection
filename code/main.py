@@ -35,6 +35,7 @@ if __name__ == "__main__":
         "resnet": ResNet(),
         "densenet": DenseNet(),
         "mobilenet": MobileNet(),
+        "transformer": VisionTransformer(),   # Alik's edits
     }
     try:
         model = all_models[MODEL]
