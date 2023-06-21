@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import torch
@@ -10,6 +10,7 @@ from PIL import Image
 import os
 import json
 from torch.utils.data import Dataset, DataLoader
+import random
 
 class UltrasoundDataset(Dataset):
     def __init__(self, root_dir, target_size):
@@ -51,23 +52,44 @@ class UltrasoundDataset(Dataset):
         labels = []
         json_data_shape = []
         counter = 0
+        malignant_paths = []
+        benign_paths = []
+        
         for dirpath, dirnames, filenames in os.walk(self.root_dir):
             for filename in filenames:
                 if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
                     file_path = os.path.join(dirpath, filename)
                     image_paths.append(file_path)
-
+                    
                     if 'benign' in file_path:
+                        benign_paths.append(file_path)
                         label = 'benign'
                     else:
+                        malignant_paths.append(file_path)
                         label = 'malignant'
                     labels.append(label)
-
+                    
                     json_path = os.path.splitext(file_path)[0] + '.json'
                     with open(json_path) as json_file:
                         data = json.load(json_file)
                         json_data_shape.append(data['shapes'][0]['points'])
 
+        # Perform random oversampling on the minority class (malignant)
+        oversampled_malignant_paths = random.choices(malignant_paths, k=len(benign_paths))
+        image_paths.extend(oversampled_malignant_paths)
+        labels.extend(['malignant'] * len(oversampled_malignant_paths))
+        json_data_shape.extend([json_data_shape[malignant_paths.index(path)] for path in oversampled_malignant_paths])
+        
+        # Randomly undersample the majority class (benign)
+        undersampled_benign_indices = random.sample(range(len(benign_paths)), len(malignant_paths))
+        undersampled_benign_paths = [benign_paths[i] for i in undersampled_benign_indices]
+        image_paths.extend(undersampled_benign_paths)
+        labels.extend(['benign'] * len(undersampled_benign_paths))
+        json_data_shape.extend([json_data_shape[benign_paths.index(path)] for path in undersampled_benign_paths])
+        
+        # Update the counter
+        counter = len(image_paths) - len(benign_paths) - len(malignant_paths)
+        
         return image_paths, labels, json_data_shape, counter
 
 root_dir = 'CSE6748/Ultrasound-labeled'
@@ -75,16 +97,4 @@ target_size = (256, 256)  # Specify the desired target size for resizing
 dataset = UltrasoundDataset(root_dir, target_size)
 
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=0)
-
-# Example usage:
-for batch in dataloader:
-    images, labels, json_shapes = batch
-    # Do something with the batch of images, labels, and JSON shapes
-    pass
-
-
-# In[ ]:
-
-
-
 
