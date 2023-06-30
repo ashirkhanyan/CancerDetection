@@ -36,6 +36,7 @@ if __name__ == "__main__":
         "densenet": DenseNet(),
         "mobilenet": MobileNet(),
         "transformer": VisionTransformer(),   # Alik's edits
+        "fasterrcnn": FasterRCNN(),           # Alik's edits
     }
     try:
         model = all_models[MODEL]
