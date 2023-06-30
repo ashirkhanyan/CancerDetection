@@ -48,9 +48,9 @@ class UltrasoundDataset(Dataset):
                         counter += 1
 
                     if 'benign' in file_path:
-                        label = 'benign'
+                        label = 0
                     else:
-                        label = 'malignant'
+                        label = 1
                     labels.append(label)
 
                     json_path = os.path.splitext(file_path)[0] + '.json'
@@ -60,20 +60,20 @@ class UltrasoundDataset(Dataset):
 
         return image_paths, labels, json_data_shape, counter
 
-root_dir = 'CSE6748/Ultrasound-labeled'
-dataset = UltrasoundDataset(root_dir)
+#root_dir = 'CSE6748/Ultrasound-labeled'
+#dataset = UltrasoundDataset(root_dir)
 
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=0)
+#dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=0)
 
 # Example usage:
-for batch in dataloader:
-    images, labels, json_shapes = batch
+#for batch in dataloader:
+#    images, labels, json_shapes = batch
     # Do something with the batch of images, labels, and JSON shapes
-    pass
+#    pass
 
 # Print the number of loaded images, labels, and JSON data
-print(f"Number of images: {len(dataset)}")
-print(f"Number of images left out: {dataset.counter}")
+#print(f"Number of images: {len(dataset)}")
+#print(f"Number of images left out: {dataset.counter}")
 
 
 # In[ ]:
