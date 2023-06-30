@@ -6,6 +6,8 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from Dataset import UltrasoundDataset
 from models import *
 from Trainer import Trainer
+from TrainerDetectionModels import TrainerDetection
+
 from config import *
 import numpy as np
 from captum.attr import LayerGradCam

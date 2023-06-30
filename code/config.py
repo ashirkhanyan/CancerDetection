@@ -8,7 +8,7 @@ MOMENTUM = 0.9
 MODEL = "transformer" # resnet, densenet, mobilenet, transformer, fasterrcnn
 BATCH_SIZE = 32
 VIS_BATCH_SIZE = 5
-EPOCHS = 10
+EPOCHS = 10            
 
 if getpass.getuser() == 'srv':
     fld = "/Users/srv/Documents/Cloud"
