@@ -106,7 +106,7 @@ if __name__ == "__main__":
     train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
     val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_sampler)
 
-    trainer = Trainer(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, device=device, logger=logger, save_path=save_path)
+    trainer = TrainerDetection(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, device=device, logger=logger, save_path=save_path)
 
     trainer.start_train(epochs=EPOCHS, plot=True)
 

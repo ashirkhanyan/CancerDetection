@@ -88,7 +88,7 @@ class TrainerDetection():
         self.model.train()
         
         for idx, (image, label, json_shape) in enumerate(self.train_loader):
-            print("Is the model in training mode beg of for loop: ", self.model.training)
+            print("\nIs the model in training mode beg of for loop: ", self.model.training)
 
 
             image = image.to(self.device)
@@ -109,7 +109,7 @@ class TrainerDetection():
                     d['labels'] = torch.unsqueeze(label_FRCNN[i], 0).to(self.device)
                     targets.append(d)
                     
-                print('targets:', targets)
+                print('\ntargets:', targets)
                 losses = self.model(images, targets)
                 #print('losses', losses)
                 loss = sum(l for l in losses.values())
@@ -123,7 +123,7 @@ class TrainerDetection():
             
             if MODEL == 'fasterrcnn':
                 self.model.eval()
-                print("Is the model in training mode after model.eval: ", self.model.training)
+                print("\nIs the model in training mode after model.eval: ", self.model.training)
                 with torch.no_grad():
                     #print("Start evaulation")
                     pred = self.model(images)     
