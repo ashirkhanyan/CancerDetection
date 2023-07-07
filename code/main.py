@@ -5,8 +5,7 @@ from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from Dataset import UltrasoundDataset
 from models import *
-from Trainer import Trainer
-from TrainerDetectionModels import TrainerDetection
+from TrainerDetectionModels import Trainer
 
 from config import *
 import numpy as np
@@ -66,7 +65,7 @@ if __name__ == "__main__":
         print("Unknown Class Activation Map")
 
     if torch.has_mps:
-        device = torch.device("mps")
+        device = torch.device("cpu")
     elif torch.has_cuda:
         device = torch.device("cuda")
     else:
@@ -106,15 +105,17 @@ if __name__ == "__main__":
     train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
     val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_sampler)
 
-    trainer = TrainerDetection(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, device=device, logger=logger, save_path=save_path)
+    trainer = Trainer(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, device=device, logger=logger, save_path=save_path)
 
     trainer.start_train(epochs=EPOCHS, plot=True)
 
-    best_model_path = os.path.join(save_path, "best_model.pt")
-    visual_save_path = os.path.join(save_path, "cam_visual")
-    malignant_dataset = UltrasoundDataset(DATA_FOLDER, only_malignant=True)
-    vis_loader = DataLoader(malignant_dataset, batch_size=VIS_BATCH_SIZE)
-    os.makedirs(visual_save_path)
-    visualizer = Visualizer(activation_map=activation_map, model=model, model_path=best_model_path, data_loader = vis_loader, device=device, logger=logger, save_path=visual_save_path)
-    layer = 64
-    visualizer.visualize(layer)
+
+    if VIS_BATCH_SIZE:
+        best_model_path = os.path.join(save_path, "best_model.pt")
+        visual_save_path = os.path.join(save_path, "cam_visual")
+        malignant_dataset = UltrasoundDataset(DATA_FOLDER, only_malignant=True)
+        vis_loader = DataLoader(malignant_dataset, batch_size=VIS_BATCH_SIZE)
+        os.makedirs(visual_save_path)
+        visualizer = Visualizer(activation_map=activation_map, model=model, model_path=best_model_path, data_loader = vis_loader, device=device, logger=logger, save_path=visual_save_path)
+        layer = 64
+        visualizer.visualize(layer)

@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
 
 
 import torch
@@ -11,6 +7,7 @@ import os
 import json
 from torch.utils.data import Dataset, DataLoader
 import random
+from config import *
 
 class UltrasoundDataset(Dataset):
     def __init__(self, root_dir, target_size=(256, 256)):
@@ -39,11 +36,9 @@ class UltrasoundDataset(Dataset):
         resize_ratio_x = resized_width / original_width
         resize_ratio_y = resized_height / original_height
 
-        resized_points = []
-        for point in json_shape:
-            x = int(point[0] * resize_ratio_x)
-            y = int(point[1] * resize_ratio_y)
-            resized_points.append([x, y])
+        ratios = torch.as_tensor([resize_ratio_x, resize_ratio_y], dtype=torch.float32)
+        resized_points = torch.as_tensor(json_shape, dtype=torch.float32)*ratios
+        resized_points = resized_points.view(4)
 
         return resized_image, label, resized_points
 
@@ -63,10 +58,10 @@ class UltrasoundDataset(Dataset):
                     
                     if 'benign' in file_path:
                         benign_paths.append(file_path)
-                        label = 0
+                        label = CLASS_MAP['benign']
                     else:
                         malignant_paths.append(file_path)
-                        label = 1
+                        label = CLASS_MAP['malignant']
                     labels.append(label)
                     
                     json_path = os.path.splitext(file_path)[0] + '.json'
@@ -107,10 +102,3 @@ class UltrasoundDataset(Dataset):
 #print(f"Total Images: {total_count}")
 #print(f"Benign Images: {benign_count} ({benign_percentage:.2f}%)")
 #print(f"Malignant Images: {malignant_count} ({malignant_percentage:.2f}%)")
-
-
-# In[ ]:
-
-
-
-

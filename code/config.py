@@ -6,9 +6,9 @@ OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
 MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn
-BATCH_SIZE = 32
-VIS_BATCH_SIZE = 5
-EPOCHS = 10            
+BATCH_SIZE = 4
+VIS_BATCH_SIZE = 0
+EPOCHS = 1
 
 if getpass.getuser() == 'srv':
     fld = "/Users/srv/Documents/Cloud"
@@ -33,3 +33,4 @@ INV_CLASS_MAP = {
     0: "benign",
     1: "malignant",
 }
+SKIP_RUN_AFTER = 6
