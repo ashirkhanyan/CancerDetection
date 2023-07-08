@@ -1,7 +1,7 @@
 import getpass
 
 SEED = 42
-LOSS = "fl"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
+LOSS = "ce"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
@@ -19,7 +19,7 @@ else:
 DATA_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/Ultrasound-labeled"
 TEST_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/test_set"
 PLOT_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/plots"
-
+BASE_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/baseline"
 
 TRAIN_PART = 0.9
 PATIENCE = 1

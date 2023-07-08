@@ -114,22 +114,21 @@ class Trainer():
     @torch.no_grad()
     def validate(self, epoch):
         self.logger.info("\n------------Validation------------")
-        acc, loss, iou = self.calculate_metrics(self.val_loader, epoch, train=False)
+        acc, loss, iou = self.calculate_metrics(self.val_loader, epoch, mode="val")
         return acc, loss, iou
     
     @torch.no_grad()
     def test(self, epoch):
         self.logger.info("\n------------Inference------------")
-        acc, loss, iou = self.calculate_metrics(self.test_loader, epoch, train=False)
+        acc, loss, iou = self.calculate_metrics(self.test_loader, epoch, mode="test")
         return acc, loss, iou
 
 
-    def calculate_metrics(self, data_loader, epoch, train=True):
+    def calculate_metrics(self, data_loader, epoch, mode="train"):
         correct = 0
         samples = 0
         tot_loss = 0
         tot_iou = 0
-        mode = "train" if train else "val"
         self.model = self.model.to(self.device)
         start_time = datetime.now()
         for idx, (image, label, json_shape) in enumerate(data_loader):
@@ -153,7 +152,7 @@ class Trainer():
             else:
                 out = self.model(image)
                 loss = self.criterion(out, label)
-            if train:
+            if mode=="train":
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
@@ -182,7 +181,7 @@ class Trainer():
                     batch_log_info = f"avg_{mode}_loss = {avg_loss:.02f}, batch_{mode}_acc = {batch_acc:.02f}, avg_{mode}_acc = {avg_acc:.02f}, batch_{mode}_iou = {batch_iou:.02f}, avg_{mode}_iou = {avg_iou:.02f}"
                 except:
                     batch_log_info = "No Boxes Detected by model to compare!"
-            if epoch == 0 and idx == 0 and train:
+            if epoch == 0 and idx == 0 and mode=="train":
                 print(f"Estimated ETA: {((datetime.now()-start_time).total_seconds()/3600) * len(data_loader.dataset)/BATCH_SIZE * EPOCHS} hours")
             self.logger.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(data_loader):03d}: loss_classifier = {losses['loss_classifier']:.02f}, loss_box_reg = {losses['loss_box_reg']:.02f}, loss_objectness = {losses['loss_objectness']:.02f}, loss_rpn_box_reg = {losses['loss_rpn_box_reg']:.02f}, batch_{mode}_loss = {loss:.02f}, {batch_log_info}")
         return avg_acc.item(), avg_loss.item(), avg_iou.item()
