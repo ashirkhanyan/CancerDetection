@@ -14,6 +14,7 @@ from Visualizer import Visualizer
 import os, sys
 import logging
 
+from Focal import FocalLoss
 
 if __name__ == "__main__":
 
@@ -24,6 +25,7 @@ if __name__ == "__main__":
         "ce": nn.CrossEntropyLoss(),
         "hb": nn.HuberLoss(),
         "l1": nn.L1Loss(),
+        "fl": FocalLoss(),
     }
     try:
         criterion = all_losses[LOSS]

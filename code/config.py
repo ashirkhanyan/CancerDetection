@@ -1,14 +1,14 @@
 import getpass
 
 SEED = 42
-LOSS = "ce"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
+LOSS = "fl"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
 MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn
 BATCH_SIZE = 4
 VIS_BATCH_SIZE = 0
-EPOCHS = 1
+EPOCHS = 10
 
 if getpass.getuser() == 'srv':
     fld = "/Users/srv/Documents/Cloud"
