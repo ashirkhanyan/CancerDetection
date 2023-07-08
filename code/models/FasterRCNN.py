@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torchvision
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from config import *
+from Focal import FocalLoss
+
 
 class FasterRCNN(nn.Module):
     def __init__(self):
@@ -9,6 +12,10 @@ class FasterRCNN(nn.Module):
         
         num_classes = 3   # two labels + the background
         self.model = fasterrcnn_resnet50_fpn(weights="DEFAULT")
+        
+        if LOSS == "fl":
+            self.classification_loss = FocalLoss()
+
         
         # get number of input features for the classifier
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
