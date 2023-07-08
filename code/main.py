@@ -91,10 +91,11 @@ if __name__ == "__main__":
     logger.info(config)
     
 
-    dataset = UltrasoundDataset(DATA_FOLDER)
+    train_dataset = UltrasoundDataset(DATA_FOLDER)
+    test_dataset = UltrasoundDataset(TEST_FOLDER)
 
-    split_at = int(len(dataset) * TRAIN_PART)
-    idxs = np.array(range(len(dataset)))
+    split_at = int(len(train_dataset) * TRAIN_PART)
+    idxs = np.array(range(len(train_dataset)))
     np.random.seed(SEED)
     np.random.shuffle(idxs)
     train_idx, val_idx = idxs[:split_at], idxs[split_at:]
@@ -102,10 +103,11 @@ if __name__ == "__main__":
     train_sampler = SubsetRandomSampler(train_idx)
     val_sampler = SubsetRandomSampler(val_idx)
 
-    train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
-    val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_sampler)
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
+    val_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, sampler=val_sampler)
+    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
-    trainer = Trainer(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, device=device, logger=logger, save_path=save_path)
+    trainer = Trainer(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, test_dataloader=test_loader, device=device, logger=logger, save_path=save_path)
 
     trainer.start_train(epochs=EPOCHS, plot=True)
 
