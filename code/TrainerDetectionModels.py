@@ -209,7 +209,7 @@ class Trainer():
         intersection_tensor_points = torch.cat((upper_left_intersection, lower_right_intersection), axis=1)
         union_area = self.area_from_corner_points(json_shape) + self.area_from_corner_points(out_box)
         intersection_area = self.area_from_corner_points(intersection_tensor_points)
-        iou = intersection_area/union_area
+        iou = intersection_area/(union_area-intersection_area)
         batch_avg_iou = torch.mean(iou)
         return batch_avg_iou
     
