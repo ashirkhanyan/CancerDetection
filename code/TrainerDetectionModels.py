@@ -14,7 +14,7 @@ from copy import deepcopy
 
 class Trainer():
 
-    def __init__(self, criterion, model: Module, optimizer: Optimizer, train_dataloader: DataLoader, val_dataloader: DataLoader = None, device = torch.device("cpu"), logger: logging.Logger = None, save_path="./") -> None:
+    def __init__(self, criterion, model: Module, optimizer: Optimizer, train_dataloader: DataLoader, val_dataloader: DataLoader = None, test_dataloader: DataLoader = None, device = torch.device("cpu"), logger: logging.Logger = None, save_path="./") -> None:
         self.criterion = criterion
         self.model = model 
         self.optimizer = optimizer
@@ -22,6 +22,7 @@ class Trainer():
         self.lr = self.optimizer.param_groups[0]['lr']
         self.train_loader = train_dataloader
         self.val_loader = val_dataloader
+        self.test_loader = test_dataloader
         self.device = device
         self.save_path = save_path
         if logger:
@@ -41,18 +42,25 @@ class Trainer():
         val_accs = []
         val_losses = []
         val_ious = []
+        test_accs = []
+        test_losses = []
+        test_ious = []
         start_time = datetime.now()
         max_acc = 0
         self.logger.info(f"Training started at {start_time}")
         for epoch in range(epochs):
             train_acc, train_loss, train_iou = self.train(epoch)
             val_acc, val_loss, val_iou = self.validate(epoch)
+            test_acc, test_loss, test_iou = self.test(epoch)
             train_accs.append(train_acc)
             train_losses.append(train_loss)
             train_ious.append(train_iou)
             val_accs.append(val_acc)
             val_losses.append(val_loss)
             val_ious.append(val_iou)
+            test_accs.append(test_acc)
+            test_losses.append(test_loss)
+            test_ious.append(test_iou)
             if val_acc > max_acc:
                 torch.save(self.model.state_dict(), os.path.join(self.save_path, "best_model.pt"))
                 max_acc = val_acc
@@ -70,6 +78,9 @@ class Trainer():
             val_acc_plot_name = os.path.join(self.save_path, "val_accuracy.png")
             val_loss_plot_name = os.path.join(self.save_path, "val_loss.png")
             val_iou_plot_name = os.path.join(self.save_path, "val_iou.png")
+            test_acc_plot_name = os.path.join(self.save_path, "test_accuracy.png")
+            test_loss_plot_name = os.path.join(self.save_path, "test_loss.png")
+            test_iou_plot_name = os.path.join(self.save_path, "test_iou.png")
             plot_epochs = range(1, self.epochs+1)
             self.plot_graph(plot_epochs, train_accs, "Epochs", "Train Accuracy", "Accuracy Curve (Training)", f"{train_acc_plot_name}")
             self.plot_graph(plot_epochs, train_losses, "Epochs", "Train Loss", "Loss Curve (Training)", f"{train_loss_plot_name}")
@@ -77,6 +88,9 @@ class Trainer():
             self.plot_graph(plot_epochs, val_accs, "Epochs", "Validation Accuracy", "Accuracy Curve (Validation)", f"{val_acc_plot_name}", color='orange')
             self.plot_graph(plot_epochs, val_losses, "Epochs", "Validation Loss", "Loss Curve (Validation)", f"{val_loss_plot_name}", color='orange')
             self.plot_graph(plot_epochs, val_ious, "Epochs", "Validation IOU", "IOU Curve (Validation)", f"{val_iou_plot_name}", color='orange')
+            self.plot_graph(plot_epochs, test_accs, "Epochs", "Test Accuracy", "Accuracy Curve (Test)", f"{test_acc_plot_name}", color='orange')
+            self.plot_graph(plot_epochs, test_losses, "Epochs", "Test Loss", "Loss Curve (Test)", f"{test_loss_plot_name}", color='orange')
+            self.plot_graph(plot_epochs, test_ious, "Epochs", "Test IOU", "IOU Curve (Test)", f"{test_iou_plot_name}", color='orange')
             with open(os.path.join(self.save_path, "plot_values.py"), "w") as text_file:
                 text_file.write(f"epochs={list(plot_epochs)}\n")
                 text_file.write(f"train_accs={train_accs}\n")
@@ -85,6 +99,9 @@ class Trainer():
                 text_file.write(f"val_accs={val_accs}\n")
                 text_file.write(f"val_losses={val_losses}\n")
                 text_file.write(f"val_ious={val_ious}\n")
+                text_file.write(f"test_accs={test_accs}\n")
+                text_file.write(f"test_losses={test_losses}\n")
+                text_file.write(f"test_ious={test_ious}\n")
             self.logger.info(f"Plots are available at {self.save_path}\n")
 
 
@@ -99,6 +116,12 @@ class Trainer():
         self.logger.info("\n------------Validation------------")
         acc, loss, iou = self.calculate_metrics(self.val_loader, epoch, train=False)
         return acc, loss, iou
+    
+    @torch.no_grad()
+    def test(self, epoch):
+        self.logger.info("\n------------Inference------------")
+        acc, loss, iou = self.calculate_metrics(self.test_loader, epoch, train=False)
+        return acc, loss, iou
 
 
     def calculate_metrics(self, data_loader, epoch, train=True):
@@ -108,7 +131,7 @@ class Trainer():
         tot_iou = 0
         mode = "train" if train else "val"
         self.model = self.model.to(self.device)
-        
+        start_time = datetime.now()
         for idx, (image, label, json_shape) in enumerate(data_loader):
             if idx == SKIP_RUN_AFTER:
                 break
@@ -159,6 +182,8 @@ class Trainer():
                     batch_log_info = f"avg_{mode}_loss = {avg_loss:.02f}, batch_{mode}_acc = {batch_acc:.02f}, avg_{mode}_acc = {avg_acc:.02f}, batch_{mode}_iou = {batch_iou:.02f}, avg_{mode}_iou = {avg_iou:.02f}"
                 except:
                     batch_log_info = "No Boxes Detected by model to compare!"
+            if epoch == 0 and idx == 0 and train:
+                print(f"Estimated ETA: {((datetime.now()-start_time).total_seconds()/3600) * len(data_loader.dataset)/BATCH_SIZE * EPOCHS} hours")
             self.logger.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(data_loader):03d}: loss_classifier = {losses['loss_classifier']:.02f}, loss_box_reg = {losses['loss_box_reg']:.02f}, loss_objectness = {losses['loss_objectness']:.02f}, loss_rpn_box_reg = {losses['loss_rpn_box_reg']:.02f}, batch_{mode}_loss = {loss:.02f}, {batch_log_info}")
         return avg_acc.item(), avg_loss.item(), avg_iou.item()
 

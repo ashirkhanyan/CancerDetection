@@ -8,7 +8,8 @@ MOMENTUM = 0.9
 MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn
 BATCH_SIZE = 4
 VIS_BATCH_SIZE = 0
-EPOCHS = 10
+
+EPOCHS = 2
 
 if getpass.getuser() == 'srv':
     fld = "/Users/srv/Documents/Cloud"
@@ -16,6 +17,7 @@ else:
     fld = "/Users/aleks"
 
 DATA_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/Ultrasound-labeled"
+TEST_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/test_set"
 PLOT_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/plots"
 
 
@@ -33,4 +35,4 @@ INV_CLASS_MAP = {
     0: "benign",
     1: "malignant",
 }
-SKIP_RUN_AFTER = 6
+SKIP_RUN_AFTER = -1
