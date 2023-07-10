@@ -69,7 +69,7 @@ if __name__ == "__main__":
         print("Unknown Class Activation Map")
 
     if torch.has_mps:
-        device = torch.device("cpu")
+        device = torch.device("mps")
     elif torch.has_cuda:
         device = torch.device("cuda")
     else:
@@ -142,4 +142,5 @@ if __name__ == "__main__":
                 out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
                 if idx < 20:
                     plot_boxes(json_shape, out_box, images, save_path, idx, BATCH_SIZE, ngraphs = 1)
+
 

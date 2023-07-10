@@ -131,6 +131,7 @@ class Trainer():
         samples = 0
         tot_loss = 0
         tot_iou = 0
+        avg_iou = torch.Tensor([0])
         self.model = self.model.to(self.device)
         start_time = datetime.now()
         for idx, (image, label, json_shape) in enumerate(data_loader):
@@ -151,9 +152,11 @@ class Trainer():
                     targets.append(d)
                 losses = self.model(images, targets)
                 loss = sum(l for l in losses.values())
+                batch_loss_info = f"loss_classifier = {losses['loss_classifier']:.02f}, loss_box_reg = {losses['loss_box_reg']:.02f}, loss_objectness = {losses['loss_objectness']:.02f}, loss_rpn_box_reg = {losses['loss_rpn_box_reg']:.02f}, batch_{mode}_loss = {loss:.02f}"
             else:
                 out = self.model(image)
                 loss = self.criterion(out, label)
+                batch_loss_info = f"batch_{mode}_loss = {loss:.02f}"
             if mode=="train":
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -173,19 +176,26 @@ class Trainer():
                     batch_iou = self.calc_iou(json_shape, out_box)
                     tot_iou += batch_iou
                     avg_iou = tot_iou/(idx+1)
-                    acc = self.accuracy(out, label)
-                    batch_acc = acc/image.shape[0]
-                    correct += acc
-                    samples += image.shape[0]
-                    avg_acc = correct/samples
-                    tot_loss += loss
-                    avg_loss = tot_loss/(idx+1)
-                    batch_log_info = f"avg_{mode}_loss = {avg_loss:.02f}, batch_{mode}_acc = {batch_acc:.02f}, avg_{mode}_acc = {avg_acc:.02f}, batch_{mode}_iou = {batch_iou:.02f}, avg_{mode}_iou = {avg_iou:.02f}"
+                    batch_iou_info = f"batch_{mode}_iou = {batch_iou:.02f}, avg_{mode}_iou = {avg_iou:.02f}"
                 except:
-                    batch_log_info = "No Boxes Detected by model to compare!"
+                    batch_iou_info = "No Boxes Detected by model to compare!"
+            else:
+                batch_iou_info = "IOU not applicable"
+            
+            try:
+                acc = self.accuracy(out, label)
+                batch_acc = acc/image.shape[0]
+                correct += acc
+                samples += image.shape[0]
+                avg_acc = correct/samples
+                tot_loss += loss
+                avg_loss = tot_loss/(idx+1)
+                batch_acc_info = f"avg_{mode}_loss = {avg_loss:.02f}, batch_{mode}_acc = {batch_acc:.02f}, avg_{mode}_acc = {avg_acc:.02f}"
+            except:
+                batch_acc_info = f"Cannot calc acc"
             if epoch == 0 and idx == 0 and mode=="train":
                 print(f"Estimated ETA: {((datetime.now()-start_time).total_seconds()/3600) * len(data_loader.dataset)/BATCH_SIZE * EPOCHS} hours")
-            self.logger.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(data_loader):03d}: loss_classifier = {losses['loss_classifier']:.02f}, loss_box_reg = {losses['loss_box_reg']:.02f}, loss_objectness = {losses['loss_objectness']:.02f}, loss_rpn_box_reg = {losses['loss_rpn_box_reg']:.02f}, batch_{mode}_loss = {loss:.02f}, {batch_log_info}")
+            self.logger.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(data_loader):03d}: {batch_loss_info}, {batch_acc_info}, {batch_iou_info}")
         return avg_acc.item(), avg_loss.item(), avg_iou.item()
 
 
