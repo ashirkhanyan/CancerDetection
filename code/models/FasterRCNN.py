@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision
-from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from torchvision.models.detection import fasterrcnn_resnet50_fpn, fasterrcnn_mobilenet_v3_large_fpn
 from config import *
 from Focal import FocalLoss
 
@@ -11,7 +11,12 @@ class FasterRCNN(nn.Module):
         super().__init__()
         
         num_classes = 3   # two labels + the background
-        self.model = fasterrcnn_resnet50_fpn(weights="DEFAULT")
+        if MODEL_BACKBONE == "resnet":
+            self.model = fasterrcnn_resnet50_fpn(weights="DEFAULT")
+        elif MODEL_BACKBONE == "mobilenet":
+            self.model = fasterrcnn_mobilenet_v3_large_fpn(weights="DEFAULT")
+        elif MODEL_BACKBONE == "vit":
+            self.model = None
         
         if LOSS == "fl":
             self.classification_loss = FocalLoss()

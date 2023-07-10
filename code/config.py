@@ -1,15 +1,17 @@
 import getpass
 
 SEED = 42
-LOSS = "ce"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
+LOSS = "fl"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
 MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn
+MODEL_BACKBONE = "mobilenet"   # resnet, mobilenet
 BATCH_SIZE = 4
-VIS_BATCH_SIZE = 0
 
-EPOCHS = 2
+VIS_BATCH_SIZE = 5
+
+EPOCHS = 4
 
 if getpass.getuser() == 'srv':
     fld = "/Users/srv/Documents/Cloud"
@@ -20,6 +22,8 @@ DATA_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/Ultrasound-l
 TEST_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/test_set"
 PLOT_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/plots"
 BASE_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/baseline"
+VIS_MODEL_WEIGHTS = "1_resnet_ce_sgd_0.01_0.1_30"
+VIS_MODEL = "resnet"
 
 TRAIN_PART = 0.9
 PATIENCE = 1
