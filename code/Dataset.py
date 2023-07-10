@@ -5,12 +5,12 @@ from torchvision import transforms
 from PIL import Image
 import os
 import json
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import random
 from config import *
 
 class UltrasoundDataset(Dataset):
-    def __init__(self, root_dir, target_size=(256, 256), only_malignant=False):
+    def __init__(self, root_dir, target_size=(256, 256), only_malignant=False, box_shape = "xyxy"):
         self.root_dir = root_dir
         self.only_malignant = only_malignant
         self.image_paths, self.labels, self.json_data_shape, self.counter = self._load_data()
@@ -19,6 +19,7 @@ class UltrasoundDataset(Dataset):
             transforms.ToTensor()
         ])
         self.target_size = target_size
+        self.box_shape = box_shape
 
     def __len__(self):
         return len(self.image_paths)
@@ -39,9 +40,16 @@ class UltrasoundDataset(Dataset):
 
         ratios = torch.as_tensor([resize_ratio_x, resize_ratio_y], dtype=torch.float32)
         resized_points = torch.as_tensor(json_shape, dtype=torch.float32)*ratios
-        resized_points = resized_points.view(4)
+        
 
-        return resized_image, label, resized_points
+        if self.box_shape == "xywh":
+            center_points = torch.sum(resized_points, dim=0)/2
+            width_height = resized_points[1] - resized_points[0]
+            final_coords = torch.cat((center_points, width_height))
+        elif self.box_shape == "xyxy":
+            final_coords = resized_points.view(4)
+
+        return resized_image, label, final_coords
 
     def _load_data(self):
         image_paths = []

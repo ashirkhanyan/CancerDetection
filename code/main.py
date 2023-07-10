@@ -69,7 +69,7 @@ if __name__ == "__main__":
         print("Unknown Class Activation Map")
 
     if torch.has_mps:
-        device = torch.device("mps")
+        device = torch.device("cpu")
     elif torch.has_cuda:
         device = torch.device("cuda")
     else:
@@ -95,8 +95,8 @@ if __name__ == "__main__":
     logger.info(config)
     
 
-    train_dataset = UltrasoundDataset(DATA_FOLDER)
-    test_dataset = UltrasoundDataset(TEST_FOLDER)
+    train_dataset = UltrasoundDataset(DATA_FOLDER, box_shape=BOX_SHAPE)
+    test_dataset = UltrasoundDataset(TEST_FOLDER, box_shape=BOX_SHAPE)
 
     split_at = int(len(train_dataset) * TRAIN_PART)
     idxs = np.array(range(len(train_dataset)))
