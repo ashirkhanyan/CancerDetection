@@ -15,6 +15,8 @@ import os, sys
 import logging
 
 from Focal import FocalLoss
+from captum_utils import plot_boxes
+
 
 if __name__ == "__main__":
 
@@ -123,3 +125,21 @@ if __name__ == "__main__":
         visualizer = Visualizer(activation_map=activation_map, model=model, model_path=best_model_path, data_loader = vis_loader, device=device, logger=logger, save_path=visual_save_path)
         layer = 64
         visualizer.visualize(layer)
+        
+    if VIS_BOUND_BOX and MODEL == 'fasterrcnn':
+        best_model_path = os.path.join(save_path, "best_model.pt")
+        test_dataset = UltrasoundDataset(TEST_FOLDER)
+        test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
+
+        model_weights = torch.load(best_model_path)
+        model.load_state_dict(model_weights)
+
+        model.eval()
+        for idx, (image, label, json_shape) in enumerate(test_loader):
+            images = list(im.to(self.device) for im in image)
+            with torch.no_grad():
+                pred = model(images)
+                out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
+                if idx < 20:
+                    plot_boxes(json_shape, out_box, images, save_path, idx, BATCH_SIZE, ngraphs = 1)
+
