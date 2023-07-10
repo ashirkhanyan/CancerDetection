@@ -34,10 +34,10 @@ class Visualizer():
 
     
     def visualize(self, layer):
-        for idx, module in enumerate(self.model.modules()):
-            if idx == layer:
-                model_layer = module
-        activations = self.activation_map(self.model, model_layer)
+        # for idx, module in enumerate(self.model.modules()):
+        #     if idx == layer:
+        #         model_layer = module
+        activations = self.activation_map(self.model, layer)
         for idx, (image, label, json_shape) in enumerate(tqdm(self.data_loader)):
             image = image.to(self.device)
             label = label.to(self.device)

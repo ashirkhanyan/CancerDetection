@@ -10,8 +10,9 @@ import random
 from config import *
 
 class UltrasoundDataset(Dataset):
-    def __init__(self, root_dir, target_size=(256, 256)):
+    def __init__(self, root_dir, target_size=(256, 256), only_malignant=False):
         self.root_dir = root_dir
+        self.only_malignant = only_malignant
         self.image_paths, self.labels, self.json_data_shape, self.counter = self._load_data()
         self.transform = transforms.Compose([
             transforms.Resize(target_size),
@@ -51,6 +52,8 @@ class UltrasoundDataset(Dataset):
         benign_paths = []
         
         for dirpath, dirnames, filenames in os.walk(self.root_dir):
+            if self.only_malignant and "malignant" not in dirpath:
+                continue
             for filename in filenames:
                 if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
                     file_path = os.path.join(dirpath, filename)
@@ -69,18 +72,19 @@ class UltrasoundDataset(Dataset):
                         data = json.load(json_file)
                         json_data_shape.append(data['shapes'][0]['points'])
 
-        # Perform random oversampling on the minority class (malignant)
-        oversampled_malignant_paths = random.choices(malignant_paths, k=len(benign_paths))
-        image_paths.extend(oversampled_malignant_paths)
-        labels.extend([1] * len(oversampled_malignant_paths))
-        json_data_shape.extend([json_data_shape[malignant_paths.index(path)] for path in oversampled_malignant_paths])
-        
-        # Randomly undersample the majority class (benign)
-        undersampled_benign_indices = random.sample(range(len(benign_paths)), len(malignant_paths))
-        undersampled_benign_paths = [benign_paths[i] for i in undersampled_benign_indices]
-        image_paths.extend(undersampled_benign_paths)
-        labels.extend([0] * len(undersampled_benign_paths))
-        json_data_shape.extend([json_data_shape[benign_paths.index(path)] for path in undersampled_benign_paths])
+        if not self.only_malignant:
+            # Perform random oversampling on the minority class (malignant)
+            oversampled_malignant_paths = random.choices(malignant_paths, k=len(benign_paths))
+            image_paths.extend(oversampled_malignant_paths)
+            labels.extend([1] * len(oversampled_malignant_paths))
+            json_data_shape.extend([json_data_shape[malignant_paths.index(path)] for path in oversampled_malignant_paths])
+            
+            # Randomly undersample the majority class (benign)
+            undersampled_benign_indices = random.sample(range(len(benign_paths)), len(malignant_paths))
+            undersampled_benign_paths = [benign_paths[i] for i in undersampled_benign_indices]
+            image_paths.extend(undersampled_benign_paths)
+            labels.extend([0] * len(undersampled_benign_paths))
+            json_data_shape.extend([json_data_shape[benign_paths.index(path)] for path in undersampled_benign_paths])
         
         # Update the counter
         counter = len(image_paths) - len(benign_paths) - len(malignant_paths)

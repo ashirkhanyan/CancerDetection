@@ -42,7 +42,7 @@ if __name__ == "__main__":
         "fasterrcnn": FasterRCNN(),           # Alik's edits
     }
     try:
-        model = all_models[MODEL]
+        model = all_models[VIS_MODEL]
     except:
         print("Unknown Model")
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     folders = os.listdir(PLOT_FOLDER)
     folders = [int(dir.split("_")[0]) for dir in folders if os.path.isdir(os.path.join(PLOT_FOLDER, dir))]
     run_name = 0 if not len(folders) else max(folders) + 1
-    save_path = os.path.join(PLOT_FOLDER, str(run_name)+f"_{MODEL}_{MODEL_BACKBONE}_{LOSS}_{OPTIMIZER}_{LEARNING_RATE}_{REDUCE_FACTOR}_{EPOCHS}")
+    save_path = os.path.join(PLOT_FOLDER, VIS_MODEL_WEIGHTS)
     os.makedirs(save_path, exist_ok=True)
     print(f"Saving at {save_path}")
 
@@ -93,33 +93,14 @@ if __name__ == "__main__":
     logger.info(config)
     
 
-    train_dataset = UltrasoundDataset(DATA_FOLDER)
-    test_dataset = UltrasoundDataset(TEST_FOLDER)
-
-    split_at = int(len(train_dataset) * TRAIN_PART)
-    idxs = np.array(range(len(train_dataset)))
-    np.random.seed(SEED)
-    np.random.shuffle(idxs)
-    train_idx, val_idx = idxs[:split_at], idxs[split_at:]
-
-    train_sampler = SubsetRandomSampler(train_idx)
-    val_sampler = SubsetRandomSampler(val_idx)
-
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
-    val_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, sampler=val_sampler)
-    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
-
-    trainer = Trainer(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, test_dataloader=test_loader, device=device, logger=logger, save_path=save_path)
-
-    trainer.start_train(epochs=EPOCHS, plot=True)
 
 
-    if VIS_BATCH_SIZE:
-        best_model_path = os.path.join(save_path, "best_model.pt")
-        visual_save_path = os.path.join(save_path, "cam_visual")
-        malignant_dataset = UltrasoundDataset(DATA_FOLDER, only_malignant=True)
-        vis_loader = DataLoader(malignant_dataset, batch_size=VIS_BATCH_SIZE)
-        os.makedirs(visual_save_path)
-        visualizer = Visualizer(activation_map=activation_map, model=model, model_path=best_model_path, data_loader = vis_loader, device=device, logger=logger, save_path=visual_save_path)
-        layer = 64
-        visualizer.visualize(layer)
+    
+    best_model_path = os.path.join(save_path, "best_model.pt")
+    visual_save_path = os.path.join(save_path, "cam_visual")
+    malignant_dataset = UltrasoundDataset(DATA_FOLDER, only_malignant=True)
+    vis_loader = DataLoader(malignant_dataset, batch_size=VIS_BATCH_SIZE)
+    os.makedirs(visual_save_path, exist_ok=True)
+    visualizer = Visualizer(activation_map=activation_map, model=model, model_path=best_model_path, data_loader = vis_loader, device=device, logger=logger, save_path=visual_save_path)
+    layer = model.layer4[-1]
+    visualizer.visualize(layer)
