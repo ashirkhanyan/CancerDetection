@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
         model.eval()
         for idx, (image, label, json_shape) in enumerate(test_loader):
-            images = list(im.to(self.device) for im in image)
+            images = list(im.to(device) for im in image)
             with torch.no_grad():
                 pred = model(images)
                 out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])

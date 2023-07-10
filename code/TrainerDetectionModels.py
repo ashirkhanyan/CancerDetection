@@ -111,7 +111,7 @@ class Trainer():
 
     def train(self, epoch):
         self.logger.info("\n------------Training------------")
-        self.map = MeanAveragePrecision(iou_thresholds=[0.6])
+        self.map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
         # self.iou = IntersectionOverUnion()
         acc, loss, iou = self.calculate_metrics(self.train_loader, epoch)
         return acc, loss, iou
@@ -120,7 +120,7 @@ class Trainer():
     @torch.no_grad()
     def validate(self, epoch):
         self.logger.info("\n------------Validation------------")
-        self.map = MeanAveragePrecision(iou_thresholds=[0.6])
+        self.map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
         # self.iou = IntersectionOverUnion()
         acc, loss, iou = self.calculate_metrics(self.val_loader, epoch, mode="val")
         return acc, loss, iou
@@ -128,7 +128,7 @@ class Trainer():
     @torch.no_grad()
     def test(self, epoch):
         self.logger.info("\n------------Inference------------")
-        self.map = MeanAveragePrecision(iou_thresholds=[0.6])
+        self.map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
         # self.iou = IntersectionOverUnion()
         acc, loss, iou = self.calculate_metrics(self.test_loader, epoch, mode="test")
         return acc, loss, iou
@@ -186,7 +186,7 @@ class Trainer():
                         pred['scores'] = pred['scores'][:5]
                     self.map.update(preds, targets)
                     # self.iou.update(pred, targets)
-                    self.batch_map = MeanAveragePrecision(iou_thresholds=[0.6])
+                    self.batch_map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
                     # self.batch_iou = IntersectionOverUnion()
                     self.batch_map.update(preds, targets)
                     # self.batch_iou.update(pred, targets)
