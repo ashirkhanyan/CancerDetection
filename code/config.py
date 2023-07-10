@@ -10,6 +10,8 @@ MODEL_BACKBONE = ""   # resnet, mobilenet
 BATCH_SIZE = 32
 
 VIS_BATCH_SIZE = 5
+VIS_BOUND_BOX = True
+
 
 EPOCHS = 20
 

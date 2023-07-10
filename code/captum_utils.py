@@ -56,3 +56,38 @@ def compute_attributions(algo, inputs, **kwargs):
     A common function for computing captum attributions
     """
     return algo.attribute(inputs, **kwargs)
+
+
+def plot_boxes(self, json_shape, outbox, images, path, order, batch_size, ngraphs = 2):
+    import matplotlib.patches as patches
+    import torchvision.transforms.functional as TF
+    im_idx = np.random.choice(batch_size, size=ngraphs, replace=False)
+    for i in range(ngraphs):
+        fig, ax = plt.subplots()
+        # Convert the tensor to a NumPy array while preserving the shape
+        image_array = TF.to_pil_image(images[im_idx[i]])
+        image_array = TF.to_tensor(image_array)
+        # Transpose the array to match the required shape 
+        # for matplotlib (height, width, channels)
+        image_array = image_array.numpy()
+        img = image_array.transpose(1, 2, 0)
+        ax.imshow(img)
+        # add  the ground truth box
+        x1, y1, x2, y2 = json_shape[im_idx[i]].numpy()
+        width, height = x2 - x1, y2 - y1
+        rect = patches.Rectangle((x1, y1), width, height, linewidth=1, edgecolor='r', facecolor='none')
+        ax.add_patch(rect)
+        #ax[row, col].text(x1, y1 - 10, "Ground Truth", color='r')
+        # add  the model box
+        x3, y3, x4, y4 = outbox[im_idx[i]].detach().numpy()
+        width, height = x4 - x3, y4 - y3
+        rect2 = patches.Rectangle((x3, y3), width, height, linewidth=1, edgecolor='g', facecolor='none')
+        ax.add_patch(rect2)
+        #ax[row, col].text(x3, y3 + 10, "Model Prediction", color='g')
+        # add the model output box
+        #ax.axis('off')
+        #plt.suptitle(title)
+        fig.savefig(path + '/' + str(order) + str(i) + '.png')
+        plt.close()
+
+

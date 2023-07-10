@@ -15,6 +15,8 @@ import os, sys
 import logging
 
 from Focal import FocalLoss
+from captum_utils import plot_boxes
+
 
 if __name__ == "__main__":
 
@@ -112,4 +114,33 @@ if __name__ == "__main__":
     trainer = Trainer(criterion=criterion, model=model, optimizer=optimizer, train_dataloader=train_loader, val_dataloader=val_loader, test_dataloader=test_loader, device=device, logger=logger, save_path=save_path)
 
     trainer.start_train(epochs=EPOCHS, plot=True)
+
+
+    if VIS_BATCH_SIZE:
+        best_model_path = os.path.join(save_path, "best_model.pt")
+        visual_save_path = os.path.join(save_path, "cam_visual")
+        malignant_dataset = UltrasoundDataset(DATA_FOLDER, only_malignant=True)
+        vis_loader = DataLoader(malignant_dataset, batch_size=VIS_BATCH_SIZE)
+        os.makedirs(visual_save_path)
+        visualizer = Visualizer(activation_map=activation_map, model=model, model_path=best_model_path, data_loader = vis_loader, device=device, logger=logger, save_path=visual_save_path)
+        layer = 64
+        visualizer.visualize(layer)
+        
+    if VIS_BOUND_BOX and MODEL == 'fasterrcnn':
+        best_model_path = os.path.join(save_path, "best_model.pt")
+        test_dataset = UltrasoundDataset(TEST_FOLDER)
+        test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
+
+        model_weights = torch.load(best_model_path)
+        model.load_state_dict(model_weights)
+
+        model.eval()
+        for idx, (image, label, json_shape) in enumerate(test_loader):
+            images = list(im.to(self.device) for im in image)
+            with torch.no_grad():
+                pred = model(images)
+                out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
+                if idx < 20:
+                    plot_boxes(json_shape, out_box, images, save_path, idx, BATCH_SIZE, ngraphs = 1)
+
 

@@ -2,6 +2,8 @@
 import torch
 from torch.utils.data import DataLoader
 from torch.nn.modules import Module
+import matplotlib.pyplot as plt
+
 import os
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
