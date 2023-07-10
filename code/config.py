@@ -1,27 +1,20 @@
-import getpass
+from __hidden_config import *
 
 SEED = 42
 LOSS = "fl"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
-MODEL = "transformer" # resnet, densenet, mobilenet, transformer, fasterrcnn
-MODEL_BACKBONE = ""   # resnet, mobilenet
-BATCH_SIZE = 32
+MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn
+MODEL_TYPE = "obj_detection"  # obj_detection, classification
+MODEL_BACKBONE = "mobilenet"   # resnet, mobilenet
+BOX_SHAPE = "xyxy" # xyxy, xywh
+BATCH_SIZE = 4
 
 VIS_BATCH_SIZE = 5
 
 EPOCHS = 20
 
-if getpass.getuser() == 'srv':
-    fld = "/Users/srv/Documents/Cloud"
-else:
-    fld = "/Users/aleks"
-
-DATA_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/Ultrasound-labeled"
-TEST_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/test_set"
-PLOT_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/plots"
-BASE_FOLDER = fld + "/Georgia Institute of Technology/MVP - General/baseline"
 VIS_MODEL_WEIGHTS = "1_resnet_ce_sgd_0.01_0.1_30"
 VIS_MODEL = "resnet"
 
