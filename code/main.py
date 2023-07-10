@@ -67,7 +67,7 @@ if __name__ == "__main__":
         print("Unknown Class Activation Map")
 
     if torch.has_mps:
-        device = torch.device("cpu")
+        device = torch.device("mps")
     elif torch.has_cuda:
         device = torch.device("cuda")
     else:
@@ -113,13 +113,3 @@ if __name__ == "__main__":
 
     trainer.start_train(epochs=EPOCHS, plot=True)
 
-
-    if VIS_BATCH_SIZE:
-        best_model_path = os.path.join(save_path, "best_model.pt")
-        visual_save_path = os.path.join(save_path, "cam_visual")
-        malignant_dataset = UltrasoundDataset(DATA_FOLDER, only_malignant=True)
-        vis_loader = DataLoader(malignant_dataset, batch_size=VIS_BATCH_SIZE)
-        os.makedirs(visual_save_path)
-        visualizer = Visualizer(activation_map=activation_map, model=model, model_path=best_model_path, data_loader = vis_loader, device=device, logger=logger, save_path=visual_save_path)
-        layer = 64
-        visualizer.visualize(layer)

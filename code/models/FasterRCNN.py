@@ -17,16 +17,19 @@ class FasterRCNN(nn.Module):
             self.model = fasterrcnn_mobilenet_v3_large_fpn(weights="DEFAULT")
         elif MODEL_BACKBONE == "vit":
             self.model = None
+        else:
+            self.model = None
         
-        if LOSS == "fl":
-            self.classification_loss = FocalLoss()
+        if self.model:
+            if LOSS == "fl":
+                self.classification_loss = FocalLoss()
 
-        
-        # get number of input features for the classifier
-        in_features = self.model.roi_heads.box_predictor.cls_score.in_features
-        
-        # replace the pre-trained head with a new one
-        self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)
+            
+            # get number of input features for the classifier
+            in_features = self.model.roi_heads.box_predictor.cls_score.in_features
+            
+            # replace the pre-trained head with a new one
+            self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)
 
     def forward(self, x, targets = None):
         if targets is not None:

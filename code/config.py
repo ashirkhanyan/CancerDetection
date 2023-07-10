@@ -5,13 +5,13 @@ LOSS = "fl"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
-MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn
-MODEL_BACKBONE = "mobilenet"   # resnet, mobilenet
-BATCH_SIZE = 4
+MODEL = "transformer" # resnet, densenet, mobilenet, transformer, fasterrcnn
+MODEL_BACKBONE = ""   # resnet, mobilenet
+BATCH_SIZE = 32
 
 VIS_BATCH_SIZE = 5
 
-EPOCHS = 4
+EPOCHS = 20
 
 if getpass.getuser() == 'srv':
     fld = "/Users/srv/Documents/Cloud"
