@@ -5,7 +5,7 @@ from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from UltrasoundDataset import UltrasoundDataset
 from models import *
-from TrainerDetectionModels import Trainer
+from Trainer import Trainer
 
 from config import *
 import numpy as np
