@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
 import torchvision
-from torchvision.models.detection import ssdlite320_mobilenet_v3_large, ssd300_vgg16
-from config import *
-from Focal import FocalLoss
 
 from torchvision.models.detection.ssd import (
     SSD, 
@@ -13,14 +10,14 @@ from torchvision.models.detection.ssd import (
 
 
 class SSD_Detector(nn.Module):
-    def __init__(self):
+    def __init__(self, backbone):
         super().__init__()
         
         nclasses = 3 # Two labels + the background
 
         # SSD model with backbone resnet
         
-        if MODEL_BACKBONE == "resnet":
+        if backbone == "resnet":
             w, h = 256, 256                        # this is the target size
             #
             #print(self.model)
@@ -52,10 +49,6 @@ class SSD_Detector(nn.Module):
 
         else:
             self.model = None
-        
-
-        if LOSS == "fl":
-            self.classification_loss = FocalLoss()
 
 
     def forward(self, x, targets=None):

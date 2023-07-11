@@ -18,7 +18,8 @@ VIS_BOUND_BOX = True
 EPOCHS = 20
 
 VIS_MODEL_WEIGHTS = "1_resnet_ce_sgd_0.01_0.1_30"
-VIS_MODEL = "resnet"
+VIS_MODEL = "fasterrcnn"
+VIS_MODEL_BACKBONE = "resnet"
 
 TRAIN_PART = 0.9
 PATIENCE = 1
