@@ -1,7 +1,7 @@
 
 import torch
 from torch.utils.data import DataLoader
-from Dataset import UltrasoundDataset
+from UltrasoundDataset import UltrasoundDataset
 from models import *
 from captum_utils import plot_boxes
 from config import *

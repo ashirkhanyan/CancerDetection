@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from Dataset import UltrasoundDataset
+from UltrasoundDataset import UltrasoundDataset
 from models import *
 from TrainerDetectionModels import Trainer
 
