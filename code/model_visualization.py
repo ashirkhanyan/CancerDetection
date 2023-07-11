@@ -62,19 +62,18 @@ if __name__ == "__main__":
         visualizer.visualize(layer)
 
     elif MODEL_TYPE == "obj_detection":
-        if VIS_BOUND_BOX:
-            best_model_path = os.path.join(save_path, "best_model.pt")
-            test_dataset = UltrasoundDataset(TEST_FOLDER)
-            test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
+        best_model_path = os.path.join(save_path, "best_model.pt")
+        test_dataset = UltrasoundDataset(TEST_FOLDER)
+        test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
-            model_weights = torch.load(best_model_path)
-            model.load_state_dict(model_weights)
+        model_weights = torch.load(best_model_path)
+        model.load_state_dict(model_weights)
 
-            model.eval()
-            for idx, (image, label, json_shape) in enumerate(test_loader):
-                images = list(im.to(device) for im in image)
-                with torch.no_grad():
-                    pred = model(images)
-                    out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
-                    if idx < 20:
-                        plot_boxes(json_shape, out_box, images, save_path, idx, BATCH_SIZE, ngraphs = 1)
+        model.eval()
+        for idx, (image, label, json_shape) in enumerate(test_loader):
+            images = list(im.to(device) for im in image)
+            with torch.no_grad():
+                pred = model(images)
+                out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
+                if idx < 20:
+                    plot_boxes(json_shape, out_box, images, save_path, idx, BATCH_SIZE, ngraphs = 1)
