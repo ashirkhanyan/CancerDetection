@@ -44,6 +44,7 @@ if __name__ == "__main__":
         "transformer": VisionTransformer(),   # Alik's edits
         "fasterrcnn": FasterRCNN(backbone=MODEL_BACKBONE),           # Alik's edits
         "ssd": SSD_Detector(backbone=MODEL_BACKBONE),
+        "retinanet": RetinaNet(backbone=MODEL_BACKBONE),
     }
     try:
         model = all_models[MODEL]

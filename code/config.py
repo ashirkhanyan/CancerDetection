@@ -8,7 +8,7 @@ LOSS = "fl"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
-MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn, ssd
+MODEL = "retinanet" # resnet, densenet, mobilenet, transformer, fasterrcnn, ssd, retinanet
 MODEL_TYPE = "obj_detection"  # obj_detection, classification
 MODEL_BACKBONE = "resnet"   # resnet, mobilenet
 BOX_SHAPE = "xyxy" # xyxy, xywh
@@ -39,9 +39,9 @@ VIS_BATCH_SIZE = 0
 
 # Evaluation Config
 MODEL_WEIGHTS = {
-    "fasterrcnn_mobilenet": {"folder": "cuda_10_fasterrcnn_mobilenet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "mobilenet"},
+    "fasterrcnn_mobilenet": {"folder": "0_cuda_10_fasterrcnn_mobilenet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "mobilenet"},
     "fasterrcnn_resnet": {"folder": "218_fasterrcnn_resnet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "resnet"},   # Change
-    "ssd_resnet": {"folder": "cuda_7_ssd_resnet_fl_sgd_0.01_0.1_30", "type": "obj_detection", "backbone": "resnet"},
+    "ssd_resnet": {"folder": "0_cuda_7_ssd_resnet_fl_sgd_0.01_0.1_30", "type": "obj_detection", "backbone": "resnet"},
     "mobilenet": {"folder": "156_mobilenet__fl_sgd_0.01_0.1_20", "type": "classification"},
     "resnet": {"folder": "157_resnet__fl_sgd_0.01_0.1_20", "type": "classification"},
     "densenet": {"folder": "158_densenet__fl_sgd_0.01_0.1_20", "type": "classification"},

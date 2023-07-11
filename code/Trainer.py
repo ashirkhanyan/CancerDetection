@@ -142,7 +142,7 @@ class Trainer():
                 loss = sum(l for l in losses.values())
                 if MODEL == "fasterrcnn":
                     batch_loss_info = f"loss_classifier = {losses['loss_classifier']:.02f}, loss_box_reg = {losses['loss_box_reg']:.02f}, loss_objectness = {losses['loss_objectness']:.02f}, loss_rpn_box_reg = {losses['loss_rpn_box_reg']:.02f}, batch_{mode}_loss = {loss:.02f}"
-                elif MODEL == "ssd":
+                elif MODEL in ("ssd", "retinanet"):
                     batch_loss_info = f"loss_classifier = {losses['classification']:.02f}, loss_box_reg = {losses['bbox_regression']:.02f}, batch_{mode}_loss = {loss:.02f}"
             elif MODEL_TYPE == "classification":
                 out = self.model(image)
