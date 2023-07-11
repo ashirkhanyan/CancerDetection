@@ -6,7 +6,6 @@ from PIL import Image
 import os
 import json
 from torch.utils.data import Dataset
-import random
 from config import *
 
 class UltrasoundDataset(Dataset):

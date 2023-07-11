@@ -1,7 +1,6 @@
 import os
 import torch
 from torch.utils.data import DataLoader
-from models import *
 from config import *
 from tqdm import tqdm
 from captum_utils import visualize_attr_maps

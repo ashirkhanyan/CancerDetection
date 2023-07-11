@@ -35,3 +35,15 @@ VIS_MODEL_WEIGHTS = "1_resnet_ce_sgd_0.01_0.1_30"
 VIS_MODEL = "fasterrcnn"
 VIS_MODEL_BACKBONE = "resnet"
 VIS_BATCH_SIZE = 0
+
+
+# Evaluation Config
+MODEL_WEIGHTS = {
+    "fasterrcnn_mobilenet": {"folder": "cuda_10_fasterrcnn_mobilenet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "mobilenet"},
+    "fasterrcnn_resnet": {"folder": "218_fasterrcnn_resnet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "resnet"},   # Change
+    "ssd_resnet": {"folder": "cuda_7_ssd_resnet_fl_sgd_0.01_0.1_30", "type": "obj_detection", "backbone": "resnet"},
+    "mobilenet": {"folder": "156_mobilenet__fl_sgd_0.01_0.1_20", "type": "classification"},
+    "resnet": {"folder": "157_resnet__fl_sgd_0.01_0.1_20", "type": "classification"},
+    "densenet": {"folder": "158_densenet__fl_sgd_0.01_0.1_20", "type": "classification"},
+    "transformer": {"folder": "159_transformer__fl_sgd_0.01_0.1_20", "type": "classification"},
+}

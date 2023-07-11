@@ -83,11 +83,3 @@ class ResNet(nn.Module):
         x = torch.flatten(x, 1)
         x = self.fc(x)
         return x
-    
-
-
-if __name__ == '__main__':
-    from torch import Tensor
-    tensor = torch.rand([1, 3, 224, 224])
-    model = ResNet(image_channels=3, block=BBock, n_classes=1000)
-    print(model)
