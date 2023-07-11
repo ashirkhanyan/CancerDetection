@@ -9,7 +9,7 @@ from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from datetime import datetime
 from matplotlib import pyplot as plt
-from torchmetrics.detection import MeanAveragePrecision, IntersectionOverUnion
+from torchmetrics.detection import MeanAveragePrecision
 from config import *
 import logging
 import sys
@@ -41,29 +41,23 @@ class Trainer():
         self.epochs = epochs
         train_accs = []
         train_losses = []
-        train_ious = []
         val_accs = []
         val_losses = []
-        val_ious = []
         test_accs = []
         test_losses = []
-        test_ious = []
         start_time = datetime.now()
         max_acc = 0
         self.logger.info(f"Training started at {start_time}")
         for epoch in range(epochs):
-            train_acc, train_loss, train_iou = self.train(epoch)
-            val_acc, val_loss, val_iou = self.validate(epoch)
-            test_acc, test_loss, test_iou = self.test(epoch)
+            train_acc, train_loss = self.train(epoch)
+            val_acc, val_loss = self.validate(epoch)
+            test_acc, test_loss = self.test(epoch)
             train_accs.append(train_acc)
             train_losses.append(train_loss)
-            train_ious.append(train_iou)
             val_accs.append(val_acc)
             val_losses.append(val_loss)
-            val_ious.append(val_iou)
             test_accs.append(test_acc)
             test_losses.append(test_loss)
-            test_ious.append(test_iou)
             if val_acc > max_acc:
                 torch.save(self.model.state_dict(), os.path.join(self.save_path, "best_model.pt"))
                 max_acc = val_acc
@@ -78,68 +72,54 @@ class Trainer():
         if plot:
             train_acc_plot_name = os.path.join(self.save_path, f"train_{accuracy_name.lower()}.png")
             train_loss_plot_name = os.path.join(self.save_path, "train_loss.png")
-            train_iou_plot_name = os.path.join(self.save_path, "train_iou.png")
             val_acc_plot_name = os.path.join(self.save_path, f"val_{accuracy_name.lower()}.png")
             val_loss_plot_name = os.path.join(self.save_path, "val_loss.png")
-            val_iou_plot_name = os.path.join(self.save_path, "val_iou.png")
             test_acc_plot_name = os.path.join(self.save_path, f"test_{accuracy_name.lower()}.png")
             test_loss_plot_name = os.path.join(self.save_path, "test_loss.png")
-            test_iou_plot_name = os.path.join(self.save_path, "test_iou.png")
             plot_epochs = range(1, self.epochs+1)
             self.plot_graph(plot_epochs, train_accs, "Epochs", f"Train {accuracy_name}", f"{accuracy_name} Curve (Training)", f"{train_acc_plot_name}")
             self.plot_graph(plot_epochs, train_losses, "Epochs", "Train Loss", "Loss Curve (Training)", f"{train_loss_plot_name}")
-            self.plot_graph(plot_epochs, train_ious, "Epochs", "Train IOU", "IOU Curve (Training)", f"{train_iou_plot_name}")
             self.plot_graph(plot_epochs, val_accs, "Epochs", f"Validation {accuracy_name}", f"{accuracy_name} Curve (Validation)", f"{val_acc_plot_name}", color='orange')
             self.plot_graph(plot_epochs, val_losses, "Epochs", "Validation Loss", "Loss Curve (Validation)", f"{val_loss_plot_name}", color='orange')
-            self.plot_graph(plot_epochs, val_ious, "Epochs", "Validation IOU", "IOU Curve (Validation)", f"{val_iou_plot_name}", color='orange')
             self.plot_graph(plot_epochs, test_accs, "Epochs", f"Test {accuracy_name}", f"{accuracy_name} Curve (Test)", f"{test_acc_plot_name}", color='black')
             self.plot_graph(plot_epochs, test_losses, "Epochs", "Test Loss", "Loss Curve (Test)", f"{test_loss_plot_name}", color='black')
-            self.plot_graph(plot_epochs, test_ious, "Epochs", "Test IOU", "IOU Curve (Test)", f"{test_iou_plot_name}", color='black')
             with open(os.path.join(self.save_path, "plot_values.py"), "w") as text_file:
                 text_file.write(f"epochs={list(plot_epochs)}\n")
                 text_file.write(f"train_{accuracy_name.lower()}={train_accs}\n")
                 text_file.write(f"train_losses={train_losses}\n")
-                text_file.write(f"train_ious={train_ious}\n")
                 text_file.write(f"val_{accuracy_name.lower()}={val_accs}\n")
                 text_file.write(f"val_losses={val_losses}\n")
-                text_file.write(f"val_ious={val_ious}\n")
                 text_file.write(f"test_{accuracy_name.lower()}={test_accs}\n")
                 text_file.write(f"test_losses={test_losses}\n")
-                text_file.write(f"test_ious={test_ious}\n")
             self.logger.info(f"Plots are available at {self.save_path}\n")
 
 
     def train(self, epoch):
         self.logger.info("\n------------Training------------")
         self.map = MeanAveragePrecision(box_format=BOX_SHAPE)
-        # self.iou = IntersectionOverUnion()
-        acc, loss, iou = self.calculate_metrics(self.train_loader, epoch)
-        return acc, loss, iou
+        acc, loss = self.calculate_metrics(self.train_loader, epoch)
+        return acc, loss
 
 
     @torch.no_grad()
     def validate(self, epoch):
         self.logger.info("\n------------Validation------------")
         self.map = MeanAveragePrecision(box_format=BOX_SHAPE)
-        # self.iou = IntersectionOverUnion()
-        acc, loss, iou = self.calculate_metrics(self.val_loader, epoch, mode="val")
-        return acc, loss, iou
+        acc, loss = self.calculate_metrics(self.val_loader, epoch, mode="val")
+        return acc, loss
     
     @torch.no_grad()
     def test(self, epoch):
         self.logger.info("\n------------Inference------------")
         self.map = MeanAveragePrecision(box_format=BOX_SHAPE)
-        # self.iou = IntersectionOverUnion()
-        acc, loss, iou = self.calculate_metrics(self.test_loader, epoch, mode="test")
-        return acc, loss, iou
+        acc, loss = self.calculate_metrics(self.test_loader, epoch, mode="test")
+        return acc, loss
 
 
     def calculate_metrics(self, data_loader, epoch, mode="train"):
         correct = 0
         samples = 0
         tot_loss = 0
-        tot_iou = 0
-        avg_iou = torch.Tensor([0])
         self.model = self.model.to(self.device)
         start_time = datetime.now()
         for idx, (image, label, json_shape) in enumerate(data_loader):
@@ -148,12 +128,11 @@ class Trainer():
             image = image.to(self.device)
             label = label.to(self.device)
             json_shape = json_shape.to(self.device)
-            if MODEL_TYPE == "obj_detection":                 # FROM here on - ALik's edits
-                label_FRCNN = label + 1                # 0 is considered as background
-                targets = []                       # Alik's edits
+            if MODEL_TYPE == "obj_detection":
+                label_FRCNN = label + 1
+                targets = []
                 images = list(im.to(self.device) for im in image)
                 
-                # create the targets accordingly to feed into the Faster R-CNN
                 for i in range(len(images)):
                     d = {}
                     d['boxes'] = torch.unsqueeze(json_shape[i, :], 0).to(self.device)
@@ -182,43 +161,20 @@ class Trainer():
                     eval_model.eval()
                     images = list(im.to(self.device) for im in image)
                     preds = eval_model(images)
-
                     for pred in preds:
-                        pred['boxes'] = pred['boxes']   # Checking only top 5 score boxes
+                        pred['boxes'] = pred['boxes']
                         pred['labels'] = pred['labels']
                         pred['scores'] = pred['scores']
                     self.map.update(preds, targets)
-                    # self.iou.update(pred, targets)
                     self.batch_map = MeanAveragePrecision(box_format=BOX_SHAPE)
-                    # self.batch_iou = IntersectionOverUnion()
                     self.batch_map.update(preds, targets)
-                    # self.batch_iou.update(pred, targets)
-                #     try:
-                #         out = [pred[i]['labels'][0] for i in range(len(pred))]
-                #         # out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
-                #         out = torch.stack(out)
-                #         out = out - 1 # return back to the 0 and 1 labels
-                #         # batch_iou = self.calc_iou(json_shape, out_box)
-                #         # tot_iou += batch_iou
-                #         # avg_iou = tot_iou/(idx+1)
-                #         # batch_iou_info = f"batch_{mode}_iou = {batch_iou:.02f}, avg_{mode}_iou = {avg_iou:.02f}"
-                #     except:
-                #         batch_iou_info = "No Boxes Detected by model to compare!"
-                # else:
-                #     batch_iou_info = "IOU not applicable"
                     map_vals = self.map.compute()
-                    # iou_vals = self.iou.compute()
-                    # map_vals = {'map':0}
-                    # iou_vals = {'iou':0}
                     batch_map_vals = self.batch_map.compute()
-                    # batch_iou_vals = self.batch_iou.compute()
                     tot_loss += loss
                     avg_loss = tot_loss/(idx+1)
                     batch_map = batch_map_vals['map_50']
                     avg_map = map_vals['map_50']
                     avg_acc = avg_map
-                    # batch_iou = batch_iou_vals['iou']
-                    # avg_iou = iou_vals['iou']
                     batch_acc_info = f"avg_{mode}_loss = {avg_loss:.02f}, batch_{mode}_mAP = {batch_map:.02f}, avg_{mode}_mAP = {avg_map:.02f}"
                 elif MODEL_TYPE == "classification":
                     acc = self.accuracy(out, label)
@@ -232,7 +188,7 @@ class Trainer():
             if epoch == 0 and idx == 0 and mode=="train":
                 print(f"Estimated ETA: {((datetime.now()-start_time).total_seconds()/3600) * len(data_loader.dataset)/BATCH_SIZE * EPOCHS} hours")
             self.logger.info(f"Epoch: {epoch+1:03d}/{self.epochs:03d}: Batch: {idx+1:03d}/{len(data_loader):03d}: {batch_loss_info}, {batch_acc_info}")
-        return avg_acc.item(), avg_loss.item(), avg_iou.item()
+        return avg_acc.item(), avg_loss.item()
 
 
     @torch.no_grad()
@@ -243,29 +199,6 @@ class Trainer():
             _, pred = torch.max(out, dim=-1)
             correct = pred.eq(target).sum() * 1.0
         return correct
-
-
-    # @torch.no_grad()
-    # def calc_iou(self, json_shape, out_box):
-    #     upper_left_points_act = json_shape[:, 0:2]
-    #     lower_right_points_act = json_shape[:, 2:4]
-    #     upper_left_points_pred = out_box[:, 0:2]
-    #     lower_right_points_pred = out_box[:, 2:4]
-    #     upper_left_intersection = torch.maximum(upper_left_points_act, upper_left_points_pred)
-    #     lower_right_intersection = torch.minimum(lower_right_points_act, lower_right_points_pred)
-    #     intersection_tensor_points = torch.cat((upper_left_intersection, lower_right_intersection), axis=1)
-    #     union_area = self.area_from_corner_points(json_shape) + self.area_from_corner_points(out_box)
-    #     intersection_area = self.area_from_corner_points(intersection_tensor_points)
-    #     iou = intersection_area/(union_area-intersection_area)
-    #     batch_avg_iou = torch.mean(iou)
-    #     return batch_avg_iou
-    
-    # @torch.no_grad()
-    # def area_from_corner_points(self, tensor_points):
-    #     points = tensor_points.view(BATCH_SIZE, 2, -1)
-    #     sub = torch.abs(points[:, 0] - points[:, 1])
-    #     areas = sub[:, 0] * sub[:, 1]
-    #     return areas
     
 
     def plot_graph(self, x_axis, y_axis, x_label, y_label, title, path, color="b", marker=None):
