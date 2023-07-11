@@ -74,6 +74,9 @@ if __name__ == "__main__":
             images = list(im.to(device) for im in image)
             with torch.no_grad():
                 pred = model(images)
-                out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
-                if idx < 20:
+                try:
+                    out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
+                except:
+                    print("No box found, skipping")
+                if idx > 30 and idx < 60:
                     plot_boxes(json_shape, out_box, images, save_path, idx, BATCH_SIZE, ngraphs = 1)
