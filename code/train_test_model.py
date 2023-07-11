@@ -6,14 +6,11 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from UltrasoundDataset import UltrasoundDataset
 from models import *
 from Trainer import Trainer
-
 from config import *
 import numpy as np
 import os, sys
 import logging
-
 from losses import FocalLoss
-from captum_utils import plot_boxes
 
 
 if __name__ == "__main__":
