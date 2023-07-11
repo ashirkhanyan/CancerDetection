@@ -42,6 +42,7 @@ if __name__ == "__main__":
         "mobilenet": MobileNet(),
         "transformer": VisionTransformer(),   # Alik's edits
         "fasterrcnn": FasterRCNN(),           # Alik's edits
+        "ssd": SSD_Detector(),
     }
     try:
         model = all_models[MODEL]

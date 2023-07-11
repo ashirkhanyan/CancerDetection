@@ -5,17 +5,17 @@ LOSS = "fl"  # ce [Cross Entropy], hb [Huberloss], l1 [MAE]
 OPTIMIZER = "sgd" # sgd, adam
 LEARNING_RATE = 0.01
 MOMENTUM = 0.9
-MODEL = "fasterrcnn" # resnet, densenet, mobilenet, transformer, fasterrcnn
+MODEL = "ssd" # resnet, densenet, mobilenet, transformer, fasterrcnn, ssd
 MODEL_TYPE = "obj_detection"  # obj_detection, classification
-MODEL_BACKBONE = "mobilenet"   # resnet, mobilenet
+MODEL_BACKBONE = "resnet"   # resnet, mobilenet
 BOX_SHAPE = "xyxy" # xyxy, xywh
-BATCH_SIZE = 4
+BATCH_SIZE = 64
 
-VIS_BATCH_SIZE = 5
+VIS_BATCH_SIZE = 0
 VIS_BOUND_BOX = True
 
 
-EPOCHS = 20
+EPOCHS = 30
 
 VIS_MODEL_WEIGHTS = "1_resnet_ce_sgd_0.01_0.1_30"
 VIS_MODEL = "resnet"

@@ -111,7 +111,7 @@ class Trainer():
 
     def train(self, epoch):
         self.logger.info("\n------------Training------------")
-        self.map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
+        self.map = MeanAveragePrecision(box_format=BOX_SHAPE)
         # self.iou = IntersectionOverUnion()
         acc, loss, iou = self.calculate_metrics(self.train_loader, epoch)
         return acc, loss, iou
@@ -120,7 +120,7 @@ class Trainer():
     @torch.no_grad()
     def validate(self, epoch):
         self.logger.info("\n------------Validation------------")
-        self.map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
+        self.map = MeanAveragePrecision(box_format=BOX_SHAPE)
         # self.iou = IntersectionOverUnion()
         acc, loss, iou = self.calculate_metrics(self.val_loader, epoch, mode="val")
         return acc, loss, iou
@@ -128,7 +128,7 @@ class Trainer():
     @torch.no_grad()
     def test(self, epoch):
         self.logger.info("\n------------Inference------------")
-        self.map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
+        self.map = MeanAveragePrecision(box_format=BOX_SHAPE)
         # self.iou = IntersectionOverUnion()
         acc, loss, iou = self.calculate_metrics(self.test_loader, epoch, mode="test")
         return acc, loss, iou
@@ -161,7 +161,10 @@ class Trainer():
                     targets.append(d)
                 losses = self.model(images, targets)
                 loss = sum(l for l in losses.values())
-                batch_loss_info = f"loss_classifier = {losses['loss_classifier']:.02f}, loss_box_reg = {losses['loss_box_reg']:.02f}, loss_objectness = {losses['loss_objectness']:.02f}, loss_rpn_box_reg = {losses['loss_rpn_box_reg']:.02f}, batch_{mode}_loss = {loss:.02f}"
+                if MODEL == "fasterrcnn":
+                    batch_loss_info = f"loss_classifier = {losses['loss_classifier']:.02f}, loss_box_reg = {losses['loss_box_reg']:.02f}, loss_objectness = {losses['loss_objectness']:.02f}, loss_rpn_box_reg = {losses['loss_rpn_box_reg']:.02f}, batch_{mode}_loss = {loss:.02f}"
+                elif MODEL == "ssd":
+                    batch_loss_info = f"loss_classifier = {losses['classification']:.02f}, loss_box_reg = {losses['bbox_regression']:.02f}, batch_{mode}_loss = {loss:.02f}"
             elif MODEL_TYPE == "classification":
                 out = self.model(image)
                 loss = self.criterion(out, label)
@@ -181,12 +184,12 @@ class Trainer():
                     preds = eval_model(images)
 
                     for pred in preds:
-                        pred['boxes'] = pred['boxes'][:5]   # Checking only top 5 score boxes
-                        pred['labels'] = pred['labels'][:5]
-                        pred['scores'] = pred['scores'][:5]
+                        pred['boxes'] = pred['boxes']   # Checking only top 5 score boxes
+                        pred['labels'] = pred['labels']
+                        pred['scores'] = pred['scores']
                     self.map.update(preds, targets)
                     # self.iou.update(pred, targets)
-                    self.batch_map = MeanAveragePrecision(iou_thresholds=[0.6], box_format=BOX_SHAPE)
+                    self.batch_map = MeanAveragePrecision(box_format=BOX_SHAPE)
                     # self.batch_iou = IntersectionOverUnion()
                     self.batch_map.update(preds, targets)
                     # self.batch_iou.update(pred, targets)
@@ -211,8 +214,8 @@ class Trainer():
                     # batch_iou_vals = self.batch_iou.compute()
                     tot_loss += loss
                     avg_loss = tot_loss/(idx+1)
-                    batch_map = batch_map_vals['map']
-                    avg_map = map_vals['map']
+                    batch_map = batch_map_vals['map_50']
+                    avg_map = map_vals['map_50']
                     avg_acc = avg_map
                     # batch_iou = batch_iou_vals['iou']
                     # avg_iou = iou_vals['iou']
