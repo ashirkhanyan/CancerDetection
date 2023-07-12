@@ -12,7 +12,7 @@ MODEL = "retinanet" # resnet, densenet, mobilenet, transformer, fasterrcnn, ssd,
 MODEL_TYPE = "obj_detection"  # obj_detection, classification
 MODEL_BACKBONE = "resnet"   # resnet, mobilenet
 BOX_SHAPE = "xyxy" # xyxy, xywh
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 EPOCHS = 20
 TRAIN_PART = 0.9
 PATIENCE = 1
@@ -40,8 +40,11 @@ VIS_BATCH_SIZE = 0
 # Evaluation Config
 MODEL_WEIGHTS = {
     "fasterrcnn_mobilenet": {"folder": "0_cuda_10_fasterrcnn_mobilenet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "mobilenet"},
-    "fasterrcnn_resnet": {"folder": "218_fasterrcnn_resnet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "resnet"},   # Change
+    "fasterrcnn_resnet": {"folder": "0_cuda_11_fasterrcnn_resnet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "resnet"},
     "ssd_resnet": {"folder": "0_cuda_7_ssd_resnet_fl_sgd_0.01_0.1_30", "type": "obj_detection", "backbone": "resnet"},
+    "retinanet": {"folder": "0_cuda_14_retinanet_resnet_fl_sgd_0.01_0.1_20", "type": "obj_detection", "backbone": "resnet"},
+    "yolov5": {"folder": "0_cuda_7_ssd_resnet_fl_sgd_0.01_0.1_30", "type": "obj_detection"},
+    "yolov7": {"folder": "0_cuda_14_retinanet_resnet_fl_sgd_0.01_0.1_20", "type": "obj_detection"},
     "mobilenet": {"folder": "156_mobilenet__fl_sgd_0.01_0.1_20", "type": "classification"},
     "resnet": {"folder": "157_resnet__fl_sgd_0.01_0.1_20", "type": "classification"},
     "densenet": {"folder": "158_densenet__fl_sgd_0.01_0.1_20", "type": "classification"},

@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from config import *
 from tqdm import tqdm
-from captum_utils import visualize_attr_maps
+from utils.captum_utils import visualize_attr_maps
 
 
 

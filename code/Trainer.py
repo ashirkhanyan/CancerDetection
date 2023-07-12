@@ -161,10 +161,6 @@ class Trainer():
                     eval_model.eval()
                     images = list(im.to(self.device) for im in image)
                     preds = eval_model(images)
-                    for pred in preds:
-                        pred['boxes'] = pred['boxes']
-                        pred['labels'] = pred['labels']
-                        pred['scores'] = pred['scores']
                     self.map.update(preds, targets)
                     self.batch_map = MeanAveragePrecision(box_format=BOX_SHAPE)
                     self.batch_map.update(preds, targets)

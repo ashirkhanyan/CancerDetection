@@ -19,6 +19,7 @@ if __name__ == "__main__":
         "fasterrcnn_mobilenet": FasterRCNN(backbone="mobilenet"),
         "fasterrcnn_resnet": FasterRCNN(backbone="resnet"),
         "ssd_resnet": SSD_Detector(backbone="resnet"),
+        "retinanet": RetinaNet(backbone="resnet"),
     }
 
     device = torch.device("cpu")
@@ -34,6 +35,7 @@ if __name__ == "__main__":
         test_dataset = UltrasoundDataset(TEST_FOLDER)
         test_loader = DataLoader(test_dataset, batch_size=1)
         for model_weight in MODEL_WEIGHTS:
+            if 'yolo' in model_weight: continue
             metrics = defaultdict(int)
             model = all_models[model_weight]
             weight_folder = MODEL_WEIGHTS[model_weight]['folder']

@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from UltrasoundDataset import UltrasoundDataset
 from models import *
-from captum_utils import plot_boxes
+from utils.captum_utils import plot_boxes
 from config import *
 from captum.attr import LayerGradCam
 from Visualizer import Visualizer
