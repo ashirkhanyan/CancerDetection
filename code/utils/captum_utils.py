@@ -98,10 +98,10 @@ def get_iou(box1, box2):
     x2 = torch.min(box1[2], box2[2])
     y2 = torch.min(box1[3], box2[3])
     # Calculate area of intersection rectangle
-    intersection_area = torch.clamp(x2 - x1 , min=0) * torch.clamp(y2 - y1 , min=0)
+    intersection_area = torch.clamp(x2 - x1 + 1, min=0) * torch.clamp(y2 - y1 + 1, min=0)
     # Calculate areas of the two bounding boxes
-    box1_area = (box1[2] - box1[0] + 1) * (box1[3] - box1[1] )
-    box2_area = (box2[2] - box2[0] + 1) * (box2[3] - box2[1] )
+    box1_area = (box1[2] - box1[0] + 1) * (box1[3] - box1[1] + 1)
+    box2_area = (box2[2] - box2[0] + 1) * (box2[3] - box2[1] + 1)
     # Calculate union area
     union_area = box1_area + box2_area - intersection_area
     # Calculate IoU
@@ -109,29 +109,6 @@ def get_iou(box1, box2):
     return iou
 
 
-def compute_iou(boxA, boxB):
-    # determine the (x, y)-coordinates of the intersection rectangle
-    xA = max(boxA[0], boxB[0])
-    yA = max(boxA[1], boxB[1])
-    xB = min(boxA[2], boxB[2])
-    yB = min(boxA[3], boxB[3])
-
-    # compute the area of intersection rectangle
-    interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
-    if interArea == 0:
-        return 0
-    # compute the area of both the prediction and ground-truth
-    # rectangles
-    boxAArea = abs((boxA[2] - boxA[0]) * (boxA[3] - boxA[1]))
-    boxBArea = abs((boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
-
-    # compute the intersection over union by taking the intersection
-    # area and dividing it by the sum of prediction + ground-truth
-    # areas - the interesection area
-    iou = interArea / float(boxAArea + boxBArea - interArea)
-
-    # return the intersection over union value
-    return iou
 
 def xywh_to_xyxy(box):
     x, y, w, h = box
