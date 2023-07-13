@@ -31,9 +31,9 @@ INV_CLASS_MAP = {
 SKIP_RUN_AFTER = -1
 
 # Visualization Config
-VIS_MODEL_WEIGHTS = "1_resnet_ce_sgd_0.01_0.1_30"
+VIS_MODEL_WEIGHTS = "0_cuda_10_fasterrcnn_mobilenet_fl_sgd_0.01_0.1_20"
 VIS_MODEL = "fasterrcnn"
-VIS_MODEL_BACKBONE = "resnet"
+VIS_MODEL_BACKBONE = "mobilenet"
 VIS_BATCH_SIZE = 0
 
 

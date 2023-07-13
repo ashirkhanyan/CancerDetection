@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from UltrasoundDataset import UltrasoundDataset
 from models import *
-from utils.captum_utils import plot_boxes
+from utils.captum_utils import plot_boxes, get_iou, xywh_to_xyxy, compute_iou
 from config import *
 from captum.attr import LayerGradCam
 from Visualizer import Visualizer
@@ -62,21 +62,59 @@ if __name__ == "__main__":
         visualizer.visualize(layer)
 
     elif MODEL_TYPE == "obj_detection":
+
         best_model_path = os.path.join(save_path, "best_model.pt")
         test_dataset = UltrasoundDataset(TEST_FOLDER)
-        test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
-
-        model_weights = torch.load(best_model_path)
-        model.load_state_dict(model_weights)
+        test_loader = DataLoader(test_dataset, batch_size=1)
+        model_weights = torch.load(best_model_path, map_location="cpu")
+        model.load_state_dict(model_weights)          
 
         model.eval()
         for idx, (image, label, json_shape) in enumerate(test_loader):
+            if 'yolo' in model_weights: continue
             images = list(im.to(device) for im in image)
             with torch.no_grad():
+                if label.item() == 0:
+                    tumor_actual = "Actual_Benign"
+                elif label.item() == 1:
+                    tumor_actual = "Actual_Malignant"
+                
                 pred = model(images)
-                try:
-                    out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
-                except:
-                    print("No box found, skipping")
-                if idx > 30 and idx < 60:
-                    plot_boxes(json_shape, out_box, images, save_path, idx, BATCH_SIZE, ngraphs = 1)
+                out_label = pred[0]['labels']
+                if not len(out_label) or out_label[0].item() == 0:
+                    tumor_pred = "Predicted_Background"
+                elif out_label[0].item() == 1:
+                    tumor_pred = "Predicted_Benign"
+                elif out_label[0].item() == 2:
+                    tumor_pred = "Predicted_Malignant"
+                #out_box = torch.stack([pred[i]['boxes'][0] for i in range(len(pred))])
+                outbox = pred[0]['boxes']
+                if not len(outbox):
+                    continue
+                if BOX_SHAPE == "xywh": 
+                    outbox = xywh_to_xyxy(outbox)
+                # first ones
+                json, outbox, image = json_shape[0], outbox[0], images[0]
+                iou = get_iou(json, outbox)
+                print(iou)
+                # count the different types of images
+                if iou.item() < 0.5 and label.item() == 0:
+                    detection_tumor = 'bad_detection_true_benign_'
+                elif iou.item() < 0.5 and label.item() == 1:
+                    detection_tumor = 'bad_detection_true_malignant_'
+                elif iou.item() > 0.7 and label.item() == 0:
+                    detection_tumor = 'good_detection_true_benign_'
+                elif iou.item() > 0.7 and label.item() == 1:
+                    detection_tumor = 'good_detection_true_malignant_'
+   
+                plot_boxes(json, outbox, image, tumor_actual, tumor_pred, save_path, detection_tumor)
+                
+                # this part is needed to stop the code from running when we have
+                # enough images - we need 4 bad ones, 4 good ones
+                # we did not use this part actually and we left the model to go over
+                # all the images, so commenting them out for now
+                #files = os.listdir(save_path)
+                #files = [image for image in files if image.startswith('bad_detect') or image.startswith('good_detect')]
+                #if len(files) == 8:
+                #    print("We have enough images, aborting")
+                #    break
